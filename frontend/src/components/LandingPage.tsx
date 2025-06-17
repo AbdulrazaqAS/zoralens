@@ -1,11 +1,13 @@
 import { useEffect } from "react";
 import { Button } from "./Button";
 import { baseSepolia, base } from "viem/chains";
-import { fetchSingleCoin } from "../scripts/getters";
+import { fetchSingleCoin, fetchUserProfile, fetchAllUserBalances } from "../scripts/getters";
 
 export default function LandingPage() {
   useEffect(() => {
-    fetchSingleCoin("0x445e9c0a296068dc4257767b5ed354b77cf513de", base.id).then(console.log).catch(console.error);
+    fetchUserProfile("AbdulrazaqAS").then(console.log).catch(console.error);
+    fetchAllUserBalances("AbdulrazaqAS").then(console.log).catch(console.error);
+    // fetchSingleCoin("0x445e9c0a296068dc4257767b5ed354b77cf513de", base.id).then(console.log).catch(console.error);
   }, []);
 
   return (
