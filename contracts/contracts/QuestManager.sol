@@ -6,11 +6,12 @@ contract QuestManager {
 
     struct Quest {
         address creator;
-        string metadataUri;
-        address tokenAddress;
+        address coin;
+        address rewardToken;
         uint256 rewardAmount;
-        QuestType questType;
+        string questUri;
         bool isActive;
+        QuestType questType;
     }
 
     uint256 public totalQuests;
@@ -33,20 +34,22 @@ contract QuestManager {
     }
 
     function createLikeQuest(
-        string memory metadataUri,
-        address tokenAddress,
-        uint256 rewardAmount
+        address coin,
+        string memory questUri,
+        address rewardToken,
+        uint256 rewardAmount,
     ) external returns (uint256) {
         require(rewardAmount > 0, "Reward must be greater than 0");
 
         uint256 questId = totalQuests++;
         quests[questId] = Quest({
             creator: msg.sender,
-            metadataUri: metadataUri,
-            tokenAddress: tokenAddress,
+            coin: coin,
+            rewardToken: rewardToken,
             rewardAmount: rewardAmount,
-            questType: QuestType.LIKE,
+            questUri: questUri,
             isActive: true
+            questType: QuestType.LIKE,
         });
 
         emit QuestCreated(questId, msg.sender);
