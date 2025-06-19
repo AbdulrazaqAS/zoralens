@@ -1,16 +1,16 @@
 import { useAccount, useDisconnect, useEnsAvatar, useEnsName, useConnect } from 'wagmi'
+import { Button } from "@/components/ui/button"
 
 function WalletOptions() {
   const { connectors, connect } = useConnect()
 
   return connectors.map((connector) => (
-    <button
-      className="bg-primary text-background px-4 py-2 rounded-md hover:bg-accent transition"
+    <Button
       key={connector.uid}
       onClick={() => connect({ connector })}
     >
       Connect {connector.name}
-    </button>
+    </Button>
   ))
 }
 
@@ -21,9 +21,9 @@ function Account() {
   const { data: ensAvatar } = useEnsAvatar({ name: ensName! })
 
   return (
-    <div className="p-1 bg-primary rounded-xl text-center flex gap-x-2">
+    <div className="p-1 bg-black rounded-xl text-center flex gap-x-2">
       {ensAvatar && <img alt="ENS Avatar" src={ensAvatar} />}
-      {address && <div>{ensName ? `${ensName} (${address})` : `${address.slice(0,4)}...${address.slice(-3)}`}</div>}
+      {address && <div className='text-white'>{ensName ? `${ensName} (${address})` : `${address.slice(0,4)}...${address.slice(-3)}`}</div>}
       <button className="p-1 bg-background rounded-xl hover:bg-background/80" onClick={() => disconnect()}>Disconnect</button>
     </div>
   )

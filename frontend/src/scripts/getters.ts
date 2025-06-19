@@ -44,7 +44,6 @@ export async function fetchAllUserBalances(identifier: Address | string) {
 
   } while (true);
 
-  console.log(`Fetched ${allBalances.length} total coin balances`);
   return allBalances;
 }
 

@@ -3,6 +3,7 @@ import { Menu, X } from "lucide-react";
 import { NavItems } from "../scripts/utils";
 
 import ConnectWallet from './ConnectWallet'
+import { Button } from "@/components/ui/button"
 
 interface Props {
   currentPage: string;

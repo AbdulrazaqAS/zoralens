@@ -10,13 +10,13 @@ import CreateMemePage from "./components/CreateMemePage";
 setApiKey(import.meta.env.VITE_ZORA_API_KEY);
 
 function App() {
-  const [currentPage, setCurrentPage] = useState("Feed");
+  const [currentPage, setCurrentPage] = useState<keyof typeof NavItems>(NavItems.feed as keyof typeof NavItems);
 
   return (
     <>
       <NavBar currentPage={currentPage} setCurrentPage={setCurrentPage} />
-      {currentPage === NavItems[feed] && <LandingPage />}
-      {currentPage === NavItems[createMeme] && <currentCreateMemePage />}
+      {currentPage === NavItems.feed && <LandingPage />}
+      {currentPage === NavItems.createMeme && <CreateMemePage />}
     </>
   )
 }

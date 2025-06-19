@@ -1,5 +1,5 @@
-import { GetCoinResponse, DeployCurrency } from "@zoralabs/coins-sdk";
-import { Address } from "viem";
+import { type GetCoinResponse, DeployCurrency } from "@zoralabs/coins-sdk";
+import { type Address } from "viem";
 
 export const NavItems = {
 	feed: "Feed",
