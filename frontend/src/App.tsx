@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { setApiKey } from "@zoralabs/coins-sdk";
 import { NavItems } from "./scripts/utils";
 
-import NavBar from "./components/NavBar";
+import NavBar from "./components/Navbar";
 import LandingPage from "./components/LandingPage";
 import CreateMemePage from "./components/CreateMemePage";
 
