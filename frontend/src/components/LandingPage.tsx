@@ -5,9 +5,9 @@ import { fetchSingleCoin, fetchUserProfile, fetchAllUserBalances } from "../scri
 
 export default function LandingPage() {
   useEffect(() => {
-    fetchUserProfile("AbdulrazaqAS").then(console.log).catch(console.error);
-    fetchAllUserBalances("AbdulrazaqAS").then(console.log).catch(console.error);
-    fetchSingleCoin("0x445e9c0a296068dc4257767b5ed354b77cf513de", base.id).then(console.error).catch(console.error);
+    // fetchUserProfile("AbdulrazaqAS").then(console.log).catch(console.error);
+    // fetchAllUserBalances("AbdulrazaqAS").then(console.log).catch(console.error);
+    // fetchSingleCoin("0x445e9c0a296068dc4257767b5ed354b77cf513de", base.id).then(console.log).catch(console.error);
   }, []);
 
   return (
