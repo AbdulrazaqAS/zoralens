@@ -4,6 +4,7 @@ import { type Address } from "viem";
 export const NavItems = {
 	feed: "Feed",
 	createMeme: "Create Meme",
+  logs: "Logs",
 }
 
 export type Zora20Token = GetCoinResponse['zora20Token'];
