@@ -6,6 +6,12 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
 import { Coins, Upload, Sparkles, Zap, Trophy, ImageIcon, CheckCircle } from "lucide-react"
+import { createSplit, createSplitsClient, uploadFileToIPFS, uploadJsonToIPFS } from "../scripts/actions"
+import { createCoin, DeployCurrency, validateMetadataJSON } from "@zoralabs/coins-sdk";
+import { usePublicClient, useWalletClient } from "wagmi"
+import { type Address } from "viem";
+
+const RemixerAddress = import.meta.env.VITE_REMIXER!;
 
 export default function CreateMemePage() {
   const [formData, setFormData] = useState({
@@ -14,7 +20,12 @@ export default function CreateMemePage() {
     description: "",
   })
   const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [image, setImage] = useState<File>()
   const [currentStep, setCurrentStep] = useState(1)
+  const [coinMetadataUri, setCoinMetadataUri] = useState("");
+
+  const { data: walletClient } = useWalletClient();
+  const publicClient = usePublicClient();
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -30,6 +41,7 @@ export default function CreateMemePage() {
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
+      setImage(file);
       const reader = new FileReader()
       reader.onload = (e) => {
         setImagePreview(e.target?.result as string)
@@ -47,6 +59,90 @@ export default function CreateMemePage() {
     { icon: ImageIcon, label: "Upload Image", completed: currentStep > 2 },
     { icon: Trophy, label: "Ready to Mint", completed: currentStep >= 3 },
   ]
+
+  async function handleUploadFile(file: File, maxSizeMb: number) {
+    if (file.size > maxSizeMb * 1024 * 1024) throw new Error(`File size exceeds ${maxSizeMb}MB limit`);
+
+    const cid = await uploadFileToIPFS(file, file.name);
+    return cid;
+  }
+
+  async function handleUploadMetadata(metadata: any, filename: string) {
+    const data = JSON.stringify(metadata);
+    const cid = await uploadJsonToIPFS(data, filename);
+    return cid;
+  }
+
+  async function handleUploadCoinMetadata() {
+    try {
+      const name = formData.memeName.trim();
+      const description = formData.description.trim();
+
+      if (!name || !description || !image) throw new Error("Invalid inputs");
+      const imageCid = await handleUploadFile(image, 10);
+      if (!imageCid) throw new Error("Coin image upload failed");
+
+      const metadata = {
+        name,
+        image: `ipfs://${imageCid}`,
+        description,
+      }
+      console.log("Image url:", `https://ipfs.io/ipfs/${imageCid}`);
+
+      validateMetadataJSON(metadata);
+      const metadataCid = await handleUploadMetadata(metadata, `${name.toLowerCase().replace(/\s+/g, "-")}.json`);  // Replace spaces with hyphens in filename
+      if (!metadataCid) throw new Error("Coin metadata upload failed");
+      const metadataUri = `ipfs://${metadataCid}`;
+      console.log("Metadata url:", `https://ipfs.io/ipfs/${metadataCid}`);
+
+      setCoinMetadataUri(metadataUri)
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function createSplitsContract() {
+    const splitsClient = createSplitsClient(publicClient!.chain.id, publicClient!, walletClient!);
+    const response = await createSplit(
+      [],
+      [],
+      RemixerAddress,
+      RemixerAddress,
+      publicClient!.chain.id,
+      splitsClient
+    );
+
+    console.log("Splits contract created:", response);
+    return response.splitAddress;
+  }
+
+  async function handleCreateCoin() {
+    try {
+      const name = formData.memeName.trim();
+      const symbol = formData.tokenSymbol.trim().toUpperCase();
+      if (!name || !symbol || !coinMetadataUri) throw new Error("Invalid inputs");
+
+      const splitsAddress = await createSplitsContract();
+      const coinArgs = {
+        name,             // The name of the coin (e.g., "My Awesome Coin")
+        symbol,           // The trading symbol for the coin (e.g., "MAC")
+        uri: coinMetadataUri,              // Metadata URI (an IPFS URI is recommended)
+        chainId: publicClient!.chain.id,         // The chain ID (defaults to base mainnet)
+        owners: [RemixerAddress],       // Optional array of owner addresses, defaults to [payoutRecipient]
+        payoutRecipient: splitsAddress, // Address that receives creator earnings
+        platformReferrer: RemixerAddress, // Optional platform referrer address, earns referral fees
+        // DeployCurrency.ETH or DeployCurrency.ZORA
+        currency: DeployCurrency.ETH, // Optional currency for trading (ETH or ZORA)
+      }
+      const result = await createCoin(coinArgs, walletClient!, publicClient!);
+
+      console.log("Transaction hash:", result.hash);
+      console.log("Coin address:", result.address);
+      console.log("Deployment details:", result.deployment);
+    } catch (error) {
+      console.error("Error creating coin:", error);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-white p-4 md:p-8">
@@ -82,29 +178,26 @@ export default function CreateMemePage() {
                     return (
                       <div
                         key={index}
-                        className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-300 ${
-                          isActive
-                            ? "bg-indigo-50 border-2 border-indigo-200"
-                            : isCompleted
-                              ? "bg-green-50 border-2 border-green-200"
-                              : "bg-gray-50 border-2 border-gray-100"
-                        }`}
+                        className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-300 ${isActive
+                          ? "bg-indigo-50 border-2 border-indigo-200"
+                          : isCompleted
+                            ? "bg-green-50 border-2 border-green-200"
+                            : "bg-gray-50 border-2 border-gray-100"
+                          }`}
                       >
                         <div
-                          className={`p-2 rounded-lg ${
-                            isActive
-                              ? "bg-indigo-500 text-white"
-                              : isCompleted
-                                ? "bg-green-500 text-white"
-                                : "bg-gray-300 text-gray-600"
-                          }`}
+                          className={`p-2 rounded-lg ${isActive
+                            ? "bg-indigo-500 text-white"
+                            : isCompleted
+                              ? "bg-green-500 text-white"
+                              : "bg-gray-300 text-gray-600"
+                            }`}
                         >
                           {isCompleted ? <CheckCircle className="w-4 h-4" /> : <StepIcon className="w-4 h-4" />}
                         </div>
                         <span
-                          className={`text-sm font-medium ${
-                            isActive || isCompleted ? "text-gray-900" : "text-gray-500"
-                          }`}
+                          className={`text-sm font-medium ${isActive || isCompleted ? "text-gray-900" : "text-gray-500"
+                            }`}
                         >
                           {step.label}
                         </span>
