@@ -48,8 +48,9 @@ contract RemixerV1 {
   }
   
   // Add/remove owners
+  // Change real coin owner. Maybe for transferring ownership to another contract.
   
-  function isCoinOwner(address coin, address user) public returns (bool) {
+  function isCoinOwner(address coin, address user) public view returns (bool) {
     // Check it is created
     address[] memory owners = coins[coin].owners;
     
