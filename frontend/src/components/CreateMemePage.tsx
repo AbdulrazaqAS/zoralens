@@ -144,6 +144,29 @@ export default function CreateMemePage() {
     }
   }
 
+  async function handleSubmit() {
+    if (!walletClient) {
+      console.error("Wallet not connected");
+      return;
+    }
+
+    try {
+      await handleUploadCoinMetadata();
+      // await handleCreateCoin();
+      // Optionally, you can reset the form or navigate to a success page
+      setFormData({
+        memeName: "",
+        tokenSymbol: "",
+        description: "",
+      });
+      setImagePreview(null);
+      setImage(undefined);
+      setCurrentStep(1);
+    } catch (error) {
+      console.error("Error during submission:", error);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-white p-4 md:p-8">
       <div className="mx-auto max-w-6xl">
@@ -306,7 +329,8 @@ export default function CreateMemePage() {
 
                   {/* Submit Button */}
                   <Button
-                    className="w-full h-14 text-lg font-bold bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 border-transparent hover:border-indigo-300"
+                    onClick={handleSubmit}
+                    className="w-full h-14 text-lg font-bold bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 border-transparent hover:border-indigo-300 hover:curso-pointer"
                     style={{
                       boxShadow: "0 0 20px rgba(99, 102, 241, 0.3)",
                     }}
