@@ -1,6 +1,6 @@
 const { ethers, upgrades } = require('hardhat');
 
-const proxyAddress = '0x4113a9ce25693bb45ac21155c1fdb9309e259e81';
+const proxyAddress = '0x039b76E8fDEE9e674257e421EAcb03eD1aE9378D';
 
 async function main() {
     const RemixerV2 = await ethers.getContractFactory('RemixerV2');
