@@ -18,11 +18,13 @@ export default function CreateMemePage() {
     memeName: "",
     tokenSymbol: "",
     description: "",
+    payoutRecipient: "",
+    revenueShare: "",
   })
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [image, setImage] = useState<File>()
   const [currentStep, setCurrentStep] = useState(1)
-  const [coinMetadataUri, setCoinMetadataUri] = useState("");
+  // const [coinMetadataUri, setCoinMetadataUri] = useState("");
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
@@ -73,7 +75,7 @@ export default function CreateMemePage() {
     return cid;
   }
 
-  async function handleUploadCoinMetadata() {
+  async function uploadCoinMetadata() {
     try {
       const name = formData.memeName.trim();
       const description = formData.description.trim();
@@ -90,18 +92,19 @@ export default function CreateMemePage() {
       console.log("Image url:", `https://ipfs.io/ipfs/${imageCid}`);
 
       validateMetadataJSON(metadata);
-      const metadataCid = await handleUploadMetadata(metadata, `${name.toLowerCase().replace(/\s+/g, "-")}.json`);  // Replace spaces with hyphens in filename
-      if (!metadataCid) throw new Error("Coin metadata upload failed");
+      const metadataCid = await handleUploadMetadata(metadata, `ZoraCoinMetadata_${name.toLowerCase().replace(/\s+/g, "-")}.json`);  // Replace spaces with hyphens in filename
+      // if (!metadataCid) throw new Error("Coin metadata upload failed");
       const metadataUri = `ipfs://${metadataCid}`;
       console.log("Metadata url:", `https://ipfs.io/ipfs/${metadataCid}`);
 
-      setCoinMetadataUri(metadataUri)
+      // setCoinMetadataUri(metadataUri)
+      return metadataUri;
     } catch (error) {
       console.error(error);
     }
   }
 
-  async function createSplitsContract() {
+  async function createSplitsContract(payoutRecipient: Address, revenueShare: number) {
     const splitsClient = createSplitsClient(publicClient!.chain.id, publicClient!, walletClient!);
     const response = await createSplit(
       [],
@@ -120,16 +123,19 @@ export default function CreateMemePage() {
     try {
       const name = formData.memeName.trim();
       const symbol = formData.tokenSymbol.trim().toUpperCase();
-      if (!name || !symbol || !coinMetadataUri) throw new Error("Invalid inputs");
+      const payoutRecipient = formData.payoutRecipient;
+      const revenueShare = Number(formData.revenueShare ?? "0");
 
-      const splitsAddress = await createSplitsContract();
+      if (!name || !symbol || !coinMetadataUri || !payoutRecipient || revenueShare < 0) throw new Error("Invalid inputs");
+
+      // const splitsAddress = await createSplitsContract(payoutRecipient, revenueShare);
       const coinArgs = {
         name,             // The name of the coin (e.g., "My Awesome Coin")
         symbol,           // The trading symbol for the coin (e.g., "MAC")
         uri: coinMetadataUri,              // Metadata URI (an IPFS URI is recommended)
         chainId: publicClient!.chain.id,         // The chain ID (defaults to base mainnet)
         owners: [RemixerAddress],       // Optional array of owner addresses, defaults to [payoutRecipient]
-        payoutRecipient: splitsAddress, // Address that receives creator earnings
+        payoutRecipient: payoutRecipient, // Address that receives creator earnings
         platformReferrer: RemixerAddress, // Optional platform referrer address, earns referral fees
         // DeployCurrency.ETH or DeployCurrency.ZORA
         currency: DeployCurrency.ETH, // Optional currency for trading (ETH or ZORA)
@@ -151,17 +157,17 @@ export default function CreateMemePage() {
     }
 
     try {
-      await handleUploadCoinMetadata();
+      const metadataUri = await uploadCoinMetadata();
       // await handleCreateCoin();
       // Optionally, you can reset the form or navigate to a success page
-      setFormData({
-        memeName: "",
-        tokenSymbol: "",
-        description: "",
-      });
-      setImagePreview(null);
-      setImage(undefined);
-      setCurrentStep(1);
+      // setFormData({
+      //   memeName: "",
+      //   tokenSymbol: "",
+      //   description: "",
+      // });
+      // setImagePreview(null);
+      // setImage(undefined);
+      // setCurrentStep(1);
     } catch (error) {
       console.error("Error during submission:", error);
     }
@@ -274,6 +280,48 @@ export default function CreateMemePage() {
                     </Card>
                   </div>
 
+                  {/* Payout Recipient */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                      <Coins className="w-4 h-4 text-yellow-400" />
+                      Payout Recipient
+                    </label>
+                    <Card className="border-2 border-gray-200 hover:border-indigo-300 transition-all duration-300 hover:shadow-md">
+                      <CardContent className="p-0">
+                        <Input
+                          placeholder="0xAddress..."
+                          value={formData.payoutRecipient}
+                          onChange={(e) => handleInputChange("payoutRecipient", e.target.value}
+                          className="border-0 text-lg p-4 focus:ring-0 focus:outline-none"
+                          maxLength={42}
+                          minLength={42}
+                        />
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Revenue Share */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                      <Coins className="w-4 h-4 text-yellow-400" />
+                      Revenue Share (%)
+                    </label>
+                    <Card className="border-2 border-gray-200 hover:border-indigo-300 transition-all duration-300 hover:shadow-md">
+                      <CardContent className="p-0">
+                        <Input
+                          placeholder="0-100"
+                          type="number"
+                          value={formData.revenueShare}
+                          onChange={(e) => handleInputChange("revenueShare", e.target.value}
+                          className="border-0 text-lg p-4 focus:ring-0 focus:outline-none"
+                          min={0}
+                          max={100}
+                          step="any"
+                        />
+                      </CardContent>
+                    </Card>
+                  </div>
+
                   {/* Description */}
                   <div className="space-y-2">
                     <label className="text-sm font-semibold text-gray-900 flex items-center gap-2">
@@ -330,7 +378,7 @@ export default function CreateMemePage() {
                   {/* Submit Button */}
                   <Button
                     onClick={handleSubmit}
-                    className="w-full h-14 text-lg font-bold bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 border-transparent hover:border-indigo-300 hover:curso-pointer"
+                    className="w-full h-14 text-lg font-bold bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 border-transparent hover:border-indigo-300 hover:cursor-pointer"
                     style={{
                       boxShadow: "0 0 20px rgba(99, 102, 241, 0.3)",
                     }}

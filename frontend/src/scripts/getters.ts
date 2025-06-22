@@ -1,5 +1,10 @@
 import { type Address } from "viem";
 import { getCoin, getCoins, getProfile, getProfileBalances } from "@zoralabs/coins-sdk";
+import { type RemixCoinMetadata } from "./utils";
+
+import RemixerABI from "../../assets/RemixerABI";
+
+const RemixerAddress = import.meta.env.VITE_REMIXER_CONTRACT!;
 
 export async function fetchUserProfile(identifier: Address | string) {
   const response = await getProfile({
@@ -95,4 +100,20 @@ export async function fetchMultipleCoins(coinsAddr: Address[], chainId: number) 
   });
 
   return response.data?.zora20Tokens;
+}
+
+export async function getRemixCoin(coin: Address, client: PublicClient): Promise<RemixCoinMetadata> {
+    const details = await client.readContract({
+        address: RemixerAddress,
+        functionName: 'coins',
+        args: [coin],
+        abi: RemixerABI
+    }) as [boolean, address, bigint, bigint];
+
+    return {
+        exist: details[0],
+        splitsAddress: details[1],
+        revenueShare: details[2],
+        revenueStack: details[3],
+    } as RemixCoinMetadata;
 }
