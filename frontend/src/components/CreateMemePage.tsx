@@ -124,7 +124,7 @@ export default function CreateMemePage() {
     try {
       const name = formData.memeName.trim();
       const symbol = formData.tokenSymbol.trim().toUpperCase();
-      const payoutRecipient = formData.payoutRecipient as Address;
+      const coinPayoutRecipient = formData.payoutRecipient as Address;
       const revenueShare = Number(formData.revenueShare ?? "0");
       const creators = ['0xE09b13f723f586bc2D98aa4B0F2C27A0320D20AB'] as Address[];
 
@@ -137,7 +137,7 @@ export default function CreateMemePage() {
         uri: coinMetadataUri,              // Metadata URI (an IPFS URI is recommended)
         chainId: publicClient!.chain.id,         // The chain ID (defaults to base mainnet)
         owners: [RemixerAddress],       // Optional array of owner addresses, defaults to [payoutRecipient]
-        payoutRecipient: payoutRecipient, // Address that receives creator earnings
+        payoutRecipient: coinPayoutRecipient, // Address that receives creator earnings
         platformReferrer: RemixerAddress, // Optional platform referrer address, earns referral fees
         // DeployCurrency.ETH or DeployCurrency.ZORA
         currency: DeployCurrency.ETH, // Optional currency for trading (ETH or ZORA)
