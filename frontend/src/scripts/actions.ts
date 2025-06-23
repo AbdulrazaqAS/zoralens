@@ -51,19 +51,22 @@ export async function createSplit(recipients: Address[], shares: number[], owner
 }
 
 export async function uploadFileToIPFS(file: File, filename: string): Promise<string | undefined> {
+  const isCodespace = import.meta.env.VITE_IS_CODESPACE === 'true';  // if using GitHub codespace. It redirects localhost.
+  const codespaceName = import.meta.env.VITE_CODESPACE_NAME;
+  
+  if (!isCodespace || !codespaceName) throw new Error("Required environment variables not set");
+  
   const formData = new FormData();
   formData.set("file", file);
   formData.set("filename", filename);
 
   let endpoint: string;
   const isDev = import.meta.env.DEV; // true in vite dev, false in build
-  const isCodespace = process.env.CODESPACES === 'true';  // if using GitHub codespace. It redirects localhost.
-  const codespaceName = process.env.CODESPACE_NAME;
-  const port = process.env.PORT || '5000';
 
+  // https://bug-free-engine-qgj465q64wqc95rq-5000.app.github.dev/
   if(isDev){
     if (isCodespace && codespaceName)
-      endpoint = `https://${codespaceName}-${port}.app.github.dev`;
+      endpoint = `https://${codespaceName}-5000.app.github.dev/api/uploadFileToIPFS`;
     else  // locally in coputer
       endpoint = "http://localhost:5000/api/uploadFileToIPFS"
   } else {  // use serverless function in build
@@ -87,6 +90,11 @@ export async function uploadFileToIPFS(file: File, filename: string): Promise<st
 };
 
 export async function uploadJsonToIPFS(data: any, filename: string): Promise<string | undefined> {
+  const isCodespace = import.meta.env.VITE_IS_CODESPACE === 'true';  // if using GitHub codespace. It redirects localhost.
+  const codespaceName = import.meta.env.VITE_CODESPACE_NAME;
+  
+  if (!isCodespace || !codespaceName) throw new Error("Required environment variables not set");
+  
   let dataStr: string;
 
   if (data instanceof Object) dataStr = JSON.stringify(data, (_, value) => typeof value === 'bigint' ? value.toString() : value);
@@ -96,11 +104,20 @@ export async function uploadJsonToIPFS(data: any, filename: string): Promise<str
   formData.set("data", dataStr);
   formData.set("filename", filename);
 
-  const isDev = import.meta.env.DEV; // true in dev, false in build
+  let endpoint: string;
+  const isDev = import.meta.env.DEV; // true in vite dev, falsy in build
+  
+  // https://bug-free-engine-qgj465q64wqc95rq-5000.app.github.dev/
+  if(isDev){
+    if (isCodespace && codespaceName)
+      endpoint = `https://${codespaceName}-5000.app.github.dev/api/uploadJSONToIPFS`;
+    else  // locally in coputer
+      endpoint = "http://localhost:5000/api/uploadJSONToIPFS"
+  } else {  // use serverless function in build
+    endpoint = "/api/uploadJSONToIPFS";
+  }
 
-  const endpoint = isDev
-    ? "http://localhost:5000/api/uploadJSONToIPFS"
-    : "/api/uploadJSONToIPFS";
+  console.log(`Endpoint: ${endpoint}`);
 
   const response = await axios.post(endpoint, formData, {
     headers: {
