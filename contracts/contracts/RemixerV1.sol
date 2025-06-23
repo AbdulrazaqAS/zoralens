@@ -24,18 +24,19 @@ interface SplitsWallet {
 contract RemixerV1 is Initializable, OwnableUpgradeable {
     struct CoinData {
         bool exist;
-        bool isRemix;
         address parent;
         address splitsAddress;
         address[] owners;
         uint16 revenueShare;
         uint16 revenueStack;
+        uint256 descendants;
     }
 
     uint256 public totalCoins;
     mapping(address coin => CoinData) public coins;
 
     event CoinAdded(address indexed coin);
+    event CoinRemixed(address indexed parent, address indexed child);
 
     error NotACoinOwner(address coin, address owner);
     error CoinNotExist(address coin);
@@ -59,11 +60,12 @@ contract RemixerV1 is Initializable, OwnableUpgradeable {
     function addCoin(address coin, address _payoutRecipient, uint16 _revenueShare, address[] memory _owners) external {
         CoinData memory data = CoinData({
             exist: true,
-            isRemix: false,
+            parent: address(0),  // address zero as parent indicates coin is root not remix
             splitsAddress: _payoutRecipient,
             owners: _owners,
             revenueShare: _revenueShare,
             revenueStack: 0,  // zero for new coin
+            descendants: 0
         });
 
         coins[coin] = data;
@@ -73,20 +75,26 @@ contract RemixerV1 is Initializable, OwnableUpgradeable {
     }
 
     // New/root coins have an address as payout recipient not a split contract
-    function addRemix(address coin, address _payoutRecipient, uint16 _revenueShare, address[] memory _owners) external {
+    function addRemix(address _parent, address _child, address _splitsAddress, uint16 _revenueShare, address[] memory _owners) external {
+        _checkCoinExist(_parent);
+        CoinData storage parentCoin = coins[_parent];
+        uint16 revenueStack = parentCoin.revenueStack + parentCoin.revenueShare;
+        
         CoinData memory data = CoinData({
             exist: true,
-            isRemix: false,
-            splitsAddress: _payoutRecipient,
+            parent: _parent,
+            splitsAddress: _splitsAddress,
             owners: _owners,
             revenueShare: _revenueShare,
-            revenueStack: 0,  // zero for new coin
+            revenueStack: revenueStack,
+            descendants: 0
         });
 
-        coins[coin] = data;
+        coins[_child] = data;
         totalCoins++;
+        parentCoin.descendants++;
 
-        emit CoinAdded(coin);
+        emit CoinRemixed(_parent, _child);
     }
 
     function setCoinUri(
