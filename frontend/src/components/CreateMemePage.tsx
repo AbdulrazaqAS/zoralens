@@ -125,6 +125,7 @@ export default function CreateMemePage() {
       const symbol = formData.tokenSymbol.trim().toUpperCase();
       const payoutRecipient = formData.payoutRecipient;
       const revenueShare = Number(formData.revenueShare ?? "0");
+      const creators = ['0xE09b13f723f586bc2D98aa4B0F2C27A0320D20AB'];
 
       if (!name || !symbol || !coinMetadataUri || !payoutRecipient || revenueShare < 0) throw new Error("Invalid inputs");
 
@@ -145,6 +146,9 @@ export default function CreateMemePage() {
       console.log("Transaction hash:", result.hash);
       console.log("Coin address:", result.address);
       console.log("Deployment details:", result.deployment);
+      
+      // Todo: payout can be gotten through contract
+      await addRemixerCoin(result.address, payoutRecipient, revenueShare, creators, walletClient!);
     } catch (error) {
       console.error("Error creating coin:", error);
     }

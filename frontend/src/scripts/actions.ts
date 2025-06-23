@@ -3,6 +3,9 @@ import { SplitV2Type } from '@0xsplits/splits-sdk/types';
 import axios from "axios";
 import type { Address, PublicClient, WalletClient } from "viem";
 
+import RemixerABI from "../../assets/RemixerABI";
+
+const RemixerAddress = import.meta.env.VITE_REMIXER_CONTRACT!;
 const SplitsApiKey = import.meta.env.VITE_SPLITS_API_KEY!;
 
 export function createSplitsClient(
@@ -52,12 +55,22 @@ export async function uploadFileToIPFS(file: File, filename: string): Promise<st
   formData.set("file", file);
   formData.set("filename", filename);
 
-  const isDev = import.meta.env.DEV; // true in dev, false in build
+  let endpoint: string;
+  const isDev = import.meta.env.DEV; // true in vite dev, false in build
+  const isCodespace = process.env.CODESPACES === 'true';  // if using GitHub codespace. It redirects localhost.
+  const codespaceName = process.env.CODESPACE_NAME;
+  const port = process.env.PORT || '5000';
 
-  const endpoint = isDev
-    ? "http://localhost:5000/api/uploadFileToIPFS"
-    : "/api/uploadFileToIPFS";
+  if(isDev){
+    if (isCodespace && codespaceName)
+      endpoint = `https://${codespaceName}-${port}.app.github.dev`;
+    else  // locally in coputer
+      endpoint = "http://localhost:5000/api/uploadFileToIPFS"
+  } else {  // use serverless function in build
+    endpoint = "/api/uploadFileToIPFS";
+  }
 
+  console.log(`Endpoint: ${endpoint}`);
   const response = await axios.post(endpoint, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
@@ -103,3 +116,20 @@ export async function uploadJsonToIPFS(data: any, filename: string): Promise<str
     throw new Error(result.error || "Unknown error");
   }
 };
+
+export async function addRemixerCoin(coin: Address, payoutRecipient: Address, revenueShare: number, owners: Address[], client: WalletClient): Promise<`0x${string}`> {
+    const contract = getContract({
+        address: RemixerAddress,
+        abi: RemixerABI,
+        client
+    });
+
+    const txHash = await contract.write.addCoin([
+      coin,
+      payoutRecipient,
+      revenueShare,
+      owners
+    ]);
+    
+    return txHash;
+}
