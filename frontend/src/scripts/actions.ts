@@ -54,7 +54,7 @@ export async function uploadFileToIPFS(file: File, filename: string): Promise<st
   const isCodespace = import.meta.env.VITE_IS_CODESPACE === 'true';  // if using GitHub codespace. It redirects localhost.
   const codespaceName = import.meta.env.VITE_CODESPACE_NAME;
   
-  if (!isCodespace || !codespaceName) throw new Error("Required environment variables not set");
+  //if (!isCodespace || !codespaceName) throw new Error("Required environment variables not set");
   
   const formData = new FormData();
   formData.set("file", file);
@@ -93,7 +93,7 @@ export async function uploadJsonToIPFS(data: any, filename: string): Promise<str
   const isCodespace = import.meta.env.VITE_IS_CODESPACE === 'true';  // if using GitHub codespace. It redirects localhost.
   const codespaceName = import.meta.env.VITE_CODESPACE_NAME;
   
-  if (!isCodespace || !codespaceName) throw new Error("Required environment variables not set");
+  //if (!isCodespace || !codespaceName) throw new Error("Required environment variables not set");
   
   let dataStr: string;
 
