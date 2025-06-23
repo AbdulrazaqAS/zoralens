@@ -1,8 +1,11 @@
 import { SplitV2Client } from '@0xsplits/splits-sdk';
 import { SplitV2Type } from '@0xsplits/splits-sdk/types';
 import axios from "axios";
-import type { Address, PublicClient, WalletClient } from "viem";
+import { getContract, type Address, type PublicClient, type WalletClient } from "viem";
 
+import RemixerABI from "../assets/RemixerABI.json";
+
+const RemixerAddress = import.meta.env.VITE_REMIXER_CONTRACT!;
 const SplitsApiKey = import.meta.env.VITE_SPLITS_API_KEY!;
 
 export function createSplitsClient(
@@ -48,16 +51,29 @@ export async function createSplit(recipients: Address[], shares: number[], owner
 }
 
 export async function uploadFileToIPFS(file: File, filename: string): Promise<string | undefined> {
+  const isCodespace = import.meta.env.VITE_IS_CODESPACE === 'true';  // if using GitHub codespace. It redirects localhost.
+  const codespaceName = import.meta.env.VITE_CODESPACE_NAME;
+  
+  //if (!isCodespace || !codespaceName) throw new Error("Required environment variables not set");
+  
   const formData = new FormData();
   formData.set("file", file);
   formData.set("filename", filename);
 
-  const isDev = import.meta.env.DEV; // true in dev, false in build
+  let endpoint: string;
+  const isDev = import.meta.env.DEV; // true in vite dev, false in build
 
-  const endpoint = isDev
-    ? "http://localhost:5000/api/uploadFileToIPFS"
-    : "/api/uploadFileToIPFS";
+  // https://bug-free-engine-qgj465q64wqc95rq-5000.app.github.dev/
+  if(isDev){
+    if (isCodespace && codespaceName)
+      endpoint = `https://${codespaceName}-5000.app.github.dev/api/uploadFileToIPFS`;
+    else  // locally in coputer
+      endpoint = "http://localhost:5000/api/uploadFileToIPFS"
+  } else {  // use serverless function in build
+    endpoint = "/api/uploadFileToIPFS";
+  }
 
+  console.log(`Endpoint: ${endpoint}`);
   const response = await axios.post(endpoint, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
@@ -74,6 +90,11 @@ export async function uploadFileToIPFS(file: File, filename: string): Promise<st
 };
 
 export async function uploadJsonToIPFS(data: any, filename: string): Promise<string | undefined> {
+  const isCodespace = import.meta.env.VITE_IS_CODESPACE === 'true';  // if using GitHub codespace. It redirects localhost.
+  const codespaceName = import.meta.env.VITE_CODESPACE_NAME;
+  
+  //if (!isCodespace || !codespaceName) throw new Error("Required environment variables not set");
+  
   let dataStr: string;
 
   if (data instanceof Object) dataStr = JSON.stringify(data, (_, value) => typeof value === 'bigint' ? value.toString() : value);
@@ -83,11 +104,20 @@ export async function uploadJsonToIPFS(data: any, filename: string): Promise<str
   formData.set("data", dataStr);
   formData.set("filename", filename);
 
-  const isDev = import.meta.env.DEV; // true in dev, false in build
+  let endpoint: string;
+  const isDev = import.meta.env.DEV; // true in vite dev, falsy in build
+  
+  // https://bug-free-engine-qgj465q64wqc95rq-5000.app.github.dev/
+  if(isDev){
+    if (isCodespace && codespaceName)
+      endpoint = `https://${codespaceName}-5000.app.github.dev/api/uploadJSONToIPFS`;
+    else  // locally in coputer
+      endpoint = "http://localhost:5000/api/uploadJSONToIPFS"
+  } else {  // use serverless function in build
+    endpoint = "/api/uploadJSONToIPFS";
+  }
 
-  const endpoint = isDev
-    ? "http://localhost:5000/api/uploadJSONToIPFS"
-    : "/api/uploadJSONToIPFS";
+  console.log(`Endpoint: ${endpoint}`);
 
   const response = await axios.post(endpoint, formData, {
     headers: {
@@ -103,3 +133,20 @@ export async function uploadJsonToIPFS(data: any, filename: string): Promise<str
     throw new Error(result.error || "Unknown error");
   }
 };
+
+export async function addRemixerCoin(coin: Address, payoutRecipient: Address, revenueShare: number, owners: Address[], client: WalletClient): Promise<`0x${string}`> {
+    const contract = getContract({
+        address: RemixerAddress,
+        abi: RemixerABI,
+        client
+    });
+
+    const txHash = await contract.write.addCoin([
+      coin,
+      payoutRecipient,
+      revenueShare,
+      owners
+    ]);
+    
+    return txHash;
+}

@@ -19,3 +19,11 @@ export type CreateCoinArgs = {
   // DeployCurrency.ETH or DeployCurrency.ZORA
   currency?: DeployCurrency; // Optional currency for trading (ETH or ZORA)
 }
+
+export interface RemixCoinMetadata {
+  exist: boolean;
+  splitsAddress: Address;
+  owners?: Address[];
+  revenueShare: bigint;
+  revenueStack: bigint;
+}
