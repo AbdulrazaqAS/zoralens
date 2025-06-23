@@ -1,8 +1,8 @@
-import { type Address } from "viem";
+import { type Address, type PublicClient } from "viem";
 import { getCoin, getCoins, getProfile, getProfileBalances } from "@zoralabs/coins-sdk";
 import { type RemixCoinMetadata } from "./utils";
 
-import RemixerABI from "../../assets/RemixerABI";
+import RemixerABI from "../assets/RemixerABI.json";
 
 const RemixerAddress = import.meta.env.VITE_REMIXER_CONTRACT!;
 
@@ -108,7 +108,7 @@ export async function getRemixCoin(coin: Address, client: PublicClient): Promise
         functionName: 'coins',
         args: [coin],
         abi: RemixerABI
-    }) as [boolean, address, bigint, bigint];
+    }) as [boolean, Address, bigint, bigint];
 
     return {
         exist: details[0],

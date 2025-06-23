@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
 import { Coins, Upload, Sparkles, Zap, Trophy, ImageIcon, CheckCircle } from "lucide-react"
-import { createSplit, createSplitsClient, uploadFileToIPFS, uploadJsonToIPFS } from "../scripts/actions"
+import { addRemixerCoin, createSplit, createSplitsClient, uploadFileToIPFS, uploadJsonToIPFS } from "../scripts/actions"
 import { createCoin, DeployCurrency, validateMetadataJSON } from "@zoralabs/coins-sdk";
 import { usePublicClient, useWalletClient } from "wagmi"
 import { type Address } from "viem";
@@ -100,7 +100,8 @@ export default function CreateMemePage() {
       // setCoinMetadataUri(metadataUri)
       return metadataUri;
     } catch (error) {
-      console.error(error);
+      alert(error.message);
+      console.error(error.message);
     }
   }
 
@@ -119,13 +120,13 @@ export default function CreateMemePage() {
     return response.splitAddress;
   }
 
-  async function handleCreateCoin() {
+  async function handleCreateCoin(coinMetadataUri: string) {
     try {
       const name = formData.memeName.trim();
       const symbol = formData.tokenSymbol.trim().toUpperCase();
-      const payoutRecipient = formData.payoutRecipient;
+      const payoutRecipient = formData.payoutRecipient as Address;
       const revenueShare = Number(formData.revenueShare ?? "0");
-      const creators = ['0xE09b13f723f586bc2D98aa4B0F2C27A0320D20AB'];
+      const creators = ['0xE09b13f723f586bc2D98aa4B0F2C27A0320D20AB'] as Address[];
 
       if (!name || !symbol || !coinMetadataUri || !payoutRecipient || revenueShare < 0) throw new Error("Invalid inputs");
 
@@ -142,13 +143,20 @@ export default function CreateMemePage() {
         currency: DeployCurrency.ETH, // Optional currency for trading (ETH or ZORA)
       }
       const result = await createCoin(coinArgs, walletClient!, publicClient!);
+      if (!result.address) throw new Error("Coin creation failed");
 
       console.log("Transaction hash:", result.hash);
       console.log("Coin address:", result.address);
       console.log("Deployment details:", result.deployment);
-      
+
       // Todo: payout can be gotten through contract
-      await addRemixerCoin(result.address, payoutRecipient, revenueShare, creators, walletClient!);
+      const txHash = await addRemixerCoin(result.address, payoutRecipient, revenueShare, creators, walletClient!);
+      publicClient?.waitForTransactionReceipt({ hash: txHash }).then((txReceipt) => {
+        if (txReceipt.status === "reverted") throw new Error("New remixer coin addition reverted");
+        else {
+          console.log("New coin added successfully!");
+        }
+      });
     } catch (error) {
       console.error("Error creating coin:", error);
     }
@@ -162,6 +170,10 @@ export default function CreateMemePage() {
 
     try {
       const metadataUri = await uploadCoinMetadata();
+      if (!metadataUri) throw new Error("Coin metadat upload failed");
+
+      await handleCreateCoin(metadataUri);
+
       // await handleCreateCoin();
       // Optionally, you can reset the form or navigate to a success page
       // setFormData({
@@ -173,6 +185,7 @@ export default function CreateMemePage() {
       // setImage(undefined);
       // setCurrentStep(1);
     } catch (error) {
+      alert(error.message);
       console.error("Error during submission:", error);
     }
   }
@@ -295,7 +308,7 @@ export default function CreateMemePage() {
                         <Input
                           placeholder="0xAddress..."
                           value={formData.payoutRecipient}
-                          onChange={(e) => handleInputChange("payoutRecipient", e.target.value}
+                          onChange={(e) => handleInputChange("payoutRecipient", e.target.value)}
                           className="border-0 text-lg p-4 focus:ring-0 focus:outline-none"
                           maxLength={42}
                           minLength={42}
@@ -316,7 +329,7 @@ export default function CreateMemePage() {
                           placeholder="0-100"
                           type="number"
                           value={formData.revenueShare}
-                          onChange={(e) => handleInputChange("revenueShare", e.target.value}
+                          onChange={(e) => handleInputChange("revenueShare", e.target.value)}
                           className="border-0 text-lg p-4 focus:ring-0 focus:outline-none"
                           min={0}
                           max={100}

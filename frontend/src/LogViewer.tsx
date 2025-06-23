@@ -64,7 +64,8 @@ const interceptConsole = (
     logStoreRef.current = updatedLogs;
     setLogs(updatedLogs);
     saveLogs(updatedLogs);
-
+    
+    alert(formatted);
     original.apply(console, args);
   };
 };

@@ -1,9 +1,9 @@
 import { SplitV2Client } from '@0xsplits/splits-sdk';
 import { SplitV2Type } from '@0xsplits/splits-sdk/types';
 import axios from "axios";
-import type { Address, PublicClient, WalletClient } from "viem";
+import { getContract, type Address, type PublicClient, type WalletClient } from "viem";
 
-import RemixerABI from "../../assets/RemixerABI";
+import RemixerABI from "../assets/RemixerABI.json";
 
 const RemixerAddress = import.meta.env.VITE_REMIXER_CONTRACT!;
 const SplitsApiKey = import.meta.env.VITE_SPLITS_API_KEY!;
