@@ -53,44 +53,67 @@ interface ISplitv2Factory {
         Split calldata _splitParams,
         address _owner,
         address _creator
-    ) external returns (address split);
+    ) external returns (address);
 }
 
 interface IZoraCoinV4 {
-    //function setPayoutRecipient(address newPayoutRecipient) external;
+    function setPayoutRecipient(address newPayoutRecipient) external;
     function burn(uint256 amount) external;
     function setContractURI(string memory newURI) external;
 }
 
-interface SplitsWallet {
+interface ISplitsWallet {
+    struct Call {
+        address to;
+        uint256 value;
+        bytes data;
+    }
+
     function updateSplit(Split calldata _split) external;
+    function setPaused(bool _paused) external;
+    function transferOwnership(address _owner) external;
+
+    /**
+     * @notice Execute a batch of calls.
+     * @dev The calls are executed in order, reverting if any of them fails. Can
+     * only be called by the owner.
+     * @param _calls The calls to execute
+     */
+    function execCalls(Call[] calldata _calls)
+        external
+        payable
+        returns (uint256 blockNumber, bytes[] memory returnData);
 }
 
 contract RemixerV1 is Initializable, OwnableUpgradeable {
     struct CoinData {
         bool exist;
         address parent;
-        address splitsAddress;
+        address splitAddress;
         address[] owners;
         uint16 revenueShare;
         uint16 revenueStack;
-        uint256 descendants;
+        uint256 children;
     }
     
     uint256 public constant TOTAL_ALLOCATION = 100000;
-    uint256 public constant DISTRIBUTOR_INCENTIVE = 500;  // 0.5% of TOTAL_ALLOCATION
+    uint16 public constant DISTRIBUTOR_INCENTIVE = 500;  // 0.5% of TOTAL_ALLOCATION
+    uint8 public constant MAX_OWNERS = 100; // 111 (approx 100) Zora
     
-    IZoraFactory public immutable COINS_FACTORY;
-    ISplitv2Factory public immutable SPLITS_FACTORY;
+    IZoraFactory public COINS_FACTORY;
+    ISplitv2Factory public SPLITS_FACTORY;
 
     uint256 public totalCoins;
     mapping(address coin => CoinData) public coins;
 
     event CoinAdded(address indexed coin);
-    event CoinRemixed(address indexed parent, address indexed child);
+    event CoinRemixed(address indexed parent, address child);
+    event OwnerAdded(address indexed coin, address owner);
+    event OwnerRemoved(address indexed coin, address owner);
 
     error NotACoinOwner(address coin, address owner);
     error CoinNotExist(address coin);
+    error MaxOwnersReached(address coin);
 
     modifier onlyCoinOwners(address coin) {
         if (!isCoinOwner(coin, msg.sender))
@@ -111,7 +134,7 @@ contract RemixerV1 is Initializable, OwnableUpgradeable {
     
     function _createSplit(
         address[] memory recipients,
-        uint256[] memory allocations,
+        uint256[] memory allocations
     ) internal returns (address) {
         Split memory split = Split(
             recipients,
@@ -134,7 +157,7 @@ contract RemixerV1 is Initializable, OwnableUpgradeable {
         address[] memory owners = new address[](1);
         owners[0] = address(this);
 
-        address coin = COINS_FACTORY.deploy(
+        (address coin, bytes memory postDeployHookDataOut) = COINS_FACTORY.deploy(
             payoutRecipient,
             owners,
             uri,
@@ -142,7 +165,7 @@ contract RemixerV1 is Initializable, OwnableUpgradeable {
             symbol,
             "",
             address(this),
-            "",
+            address(0),
             "",
             coinSalt
         );
@@ -150,121 +173,151 @@ contract RemixerV1 is Initializable, OwnableUpgradeable {
         return coin;
     }
     
-    // New/root coins have an address as payout recipient not a split contract
-    function remixCoin(address _parent, address _payoutRecipient, uint16 _revenueShare, address[] memory _owners) external {
+    function remixCoin(
+        address _parent,
+        address _payoutRecipient,
+        address[] memory _owners,
+        string memory uri,
+        string memory name,
+        string memory symbol,
+        uint16 _revenueShare,
+        bytes32 coinSalt
+    ) external {
         _checkCoinExist(_parent);
         CoinData storage parentCoin = coins[_parent];
-        uint16 revenueStack = parentCoin.revenueStack + parentCoin.revenueShare;
+        uint16 parentRevenueShare = parentCoin.revenueStack + parentCoin.revenueShare;
         
-        address[] recipients = new address[](2);
+        address[] memory recipients = new address[](2);
         recipients[0] = _payoutRecipient;
-        recipients[1] = parentCoin.payoutRecipient;
+        recipients[1] = parentCoin.splitAddress;
         
-        uint256[] allocations = new uint256[](2);
-        allocations[0] = ;
-        allocations[1] = revenueStack;
+        uint256[] memory allocations = new uint256[](2);
+        allocations[0] = TOTAL_ALLOCATION - DISTRIBUTOR_INCENTIVE - parentRevenueShare;
+        allocations[1] = parentRevenueShare;
         
         address split = _createSplit(recipients, allocations);
-        address coin = _deployCoin();
-        
-        
-        CoinData memory data = CoinData({
-            exist: true,
-            parent: address(0),  // address zero as parent indicates coin is root not remix
-            splitsAddress: _payoutRecipient,
-            owners: _owners,
-            revenueShare: _revenueShare,
-            revenueStack: 0,  // zero for new coin
-            descendants: 0
-        });
-
-        coins[_coin] = data;
-        totalCoins++;
-
-        emit CoinAdded(_coin);
-    }
-
-    // New/root coins have an address as payout recipient not a split contract
-    function addRemix(address _parent, address _child, address _splitsAddress, uint16 _revenueShare, address[] memory _owners) external {
-        _checkCoinExist(_parent);
-        CoinData storage parentCoin = coins[_parent];
-        uint16 revenueStack = parentCoin.revenueStack + parentCoin.revenueShare;
+        address coin = _deployCoin(split, uri, name, symbol, coinSalt);
         
         CoinData memory data = CoinData({
             exist: true,
             parent: _parent,
-            splitsAddress: _splitsAddress,
+            splitAddress: split,
             owners: _owners,
             revenueShare: _revenueShare,
-            revenueStack: revenueStack,
-            descendants: 0
+            revenueStack: parentRevenueShare,
+            children: 0
         });
 
-        coins[_child] = data;
+        coins[coin] = data;
         totalCoins++;
-        parentCoin.descendants++;
+        parentCoin.children++;
 
-        emit CoinRemixed(_parent, _child);
+        emit CoinRemixed(_parent, coin);
     }
 
-    // New/root coins have an address as payout recipient not a split contract
-    function addCoin(address _coin, address _payoutRecipient, uint16 _revenueShare, address[] memory _owners) external {
-        CoinData memory data = CoinData({
-            exist: true,
-            parent: address(0),  // address zero as parent indicates coin is root not remix
-            splitsAddress: _payoutRecipient,
-            owners: _owners,
-            revenueShare: _revenueShare,
-            revenueStack: 0,  // zero for new coin
-            descendants: 0
-        });
-
-        coins[_coin] = data;
-        totalCoins++;
-
-        emit CoinAdded(_coin);
-    }
-
-    // New/root coins have an address as payout recipient not a split contract
-    function addRemix(address _parent, address _child, address _splitsAddress, uint16 _revenueShare, address[] memory _owners) external {
-        _checkCoinExist(_parent);
-        CoinData storage parentCoin = coins[_parent];
-        uint16 revenueStack = parentCoin.revenueStack + parentCoin.revenueShare;
+    function createCoin(
+        address _payoutRecipient,
+        address[] memory _owners,
+        string memory uri,
+        string memory name,
+        string memory symbol,
+        uint16 _revenueShare,
+        bytes32 coinSalt
+    ) external {
+        address coin = _deployCoin(_payoutRecipient, uri, name, symbol, coinSalt);
         
         CoinData memory data = CoinData({
             exist: true,
-            parent: _parent,
-            splitsAddress: _splitsAddress,
+            parent: address(0),
+            splitAddress: _payoutRecipient,
             owners: _owners,
             revenueShare: _revenueShare,
-            revenueStack: revenueStack,
-            descendants: 0
+            revenueStack: 0,
+            children: 0
         });
 
-        coins[_child] = data;
+        coins[coin] = data;
         totalCoins++;
-        parentCoin.descendants++;
 
-        emit CoinRemixed(_parent, _child);
+        emit CoinAdded(coin);
     }
 
     function setCoinUri(
-        address coin,
-        string memory uri
+         address coin,
+         string memory uri
     ) external onlyCoinOwners(coin) {
+         _checkCoinExist(coin);
+         IZoraCoinV4 coinContract = IZoraCoinV4(coin);
+         coinContract.setContractURI(uri);
+    }
+
+    function setCoinPayoutRecipient(address coin, address recipient) external onlyCoinOwners(coin) {
         _checkCoinExist(coin);
-        IZoraCoinV4 coinContract = IZoraCoinV4(coin);
-        coinContract.setContractURI(uri);
+        CoinData storage coinData = coins[coin];
+        if (coinData.parent == address(0)) {
+            IZoraCoinV4 coinContract = IZoraCoinV4(coin);
+            coinContract.setPayoutRecipient(recipient);
+        } else {
+            ISplitsWallet split = ISplitsWallet(coinData.splitAddress);
+            address parentPayoutRecipient = coins[coinData.parent].splitAddress;
+        
+            address[] memory recipients = new address[](2);
+            recipients[0] = recipient;
+            recipients[1] = parentPayoutRecipient;
+            
+            uint256[] memory allocations = new uint256[](2);
+            allocations[0] = TOTAL_ALLOCATION - DISTRIBUTOR_INCENTIVE - coinData.revenueStack;
+            allocations[1] = coinData.revenueStack;
+
+            Split memory splitData = Split(
+                recipients,
+                allocations,
+                TOTAL_ALLOCATION,
+                DISTRIBUTOR_INCENTIVE
+            );
+            split.updateSplit(splitData);
+        }
+
     }
 
     function burn(address coin, uint256 amount) external onlyCoinOwners(coin) {
-        _checkCoinExist(coin);
-        IZoraCoinV4 coinContract = IZoraCoinV4(coin);
-        coinContract.burn(amount);
+         _checkCoinExist(coin);
+         IZoraCoinV4 coinContract = IZoraCoinV4(coin);
+         coinContract.burn(amount);
     }
 
-    // Add/remove owners
-    // Change real coin owner. Maybe for transferring ownership to another contract.
+    function addOwner(address coin, address owner) external onlyCoinOwners(coin) {
+        _checkCoinExist(coin);
+        CoinData storage coinData = coins[coin];
+        if (coinData.owners.length >= MAX_OWNERS) revert MaxOwnersReached(coin);
+        coinData.owners.push(owner);
+
+        emit OwnerAdded(coin, owner);
+    }
+
+    function removeOwner(address coin, address owner) external onlyCoinOwners(coin) {
+        _checkCoinExist(coin);
+        CoinData storage coinData = coins[coin];
+        address[] memory owners = coinData.owners;
+
+        for (uint8 i=0; i<owners.length; i++){
+            if (owners[i] == owner) {
+                address lastOwner = owners[owners.length - 1];
+
+                if (lastOwner == owner) break;
+                owners[owners.length - 1] = owner;
+                owners[i] = lastOwner;
+            }
+        }
+        coinData.owners.pop();
+
+        emit OwnerRemoved(coin, owner);
+    }
+
+    function execute(address to, uint256 value, bytes calldata data) external onlyOwner {
+        (bool success,) = to.call{value: value}(data);
+        require(success, "Execution failed");
+    }
 
     function isCoinOwner(
         address coin,
@@ -284,15 +337,20 @@ contract RemixerV1 is Initializable, OwnableUpgradeable {
         if (!coins[coin].exist) revert CoinNotExist(coin);
     }
 
-    // function getCoinRevenueStack(address coin) external view returns (uint16) {
-    //     _checkCoinExist();
-    //     return coins[coin].revenueStack;
-    // }
+    function getCoinRevenueStack(address coin) external view returns (uint16) {
+        _checkCoinExist(coin);
+        return coins[coin].revenueStack;
+    }
 
-    // function getCoinRevenueShare(address coin) external view returns (uint16) {
-    //     _checkCoinExist();
-    //     return coins[coin].revenueShare;
-    // }
+    function getCoinRevenueShare(address coin) external view returns (uint16) {
+        _checkCoinExist(coin);
+        return coins[coin].revenueShare;
+    }
+
+    function getCoinChildrenCount(address coin) external view returns (uint256) {
+        _checkCoinExist(coin);
+        return coins[coin].children;
+    }
 
     function getCoinOwners(address coin) external view returns (address[] memory) {
         _checkCoinExist(coin);
