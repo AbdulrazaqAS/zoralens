@@ -35,6 +35,11 @@
       "address": "0x26d67A01A09ab63960bdD9A1d815c52e9BB2d93E",
       "txHash": "0x672d92aadf982d690d4f0eaf1e2e013ef0c2cb713a126426383e35d87d99fab3",
       "kind": "transparent"
+    },
+    {
+      "address": "0xf34f5A0044BCdBe38B1E5a74ED412302c8e24fb0",
+      "txHash": "0x730470d1d6aa90c30162e6250a8de714083b0bf9f936c79995bebdd6b22dd691",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -683,6 +688,193 @@
               "label": "_initializing",
               "type": "t_bool",
               "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:73",
+              "offset": 8,
+              "slot": "0"
+            }
+          ]
+        }
+      }
+    },
+    "dd43a70fd43529f4fe330e35071bca22fbbe2a0e496a6317f72a577d8440856d": {
+      "address": "0x791F3b438214c76dfbc391298013218648703f8f",
+      "txHash": "0x2f492511fb0e5fc6c1bc9b78d5e9f519dd23fd802cd9dc4e30162e5d2a4f3f8d",
+      "layout": {
+        "solcVersion": "0.8.28",
+        "storage": [
+          {
+            "label": "COINS_FACTORY",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_contract(IZoraFactory)543",
+            "contract": "RemixerV1",
+            "src": "contracts/RemixerV1.sol:103"
+          },
+          {
+            "label": "SPLITS_FACTORY",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_contract(ISplitv2Factory)579",
+            "contract": "RemixerV1",
+            "src": "contracts/RemixerV1.sol:104"
+          },
+          {
+            "label": "totalCoins",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_uint256",
+            "contract": "RemixerV1",
+            "src": "contracts/RemixerV1.sol:106"
+          },
+          {
+            "label": "coins",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_mapping(t_address,t_struct(CoinData)652_storage)",
+            "contract": "RemixerV1",
+            "src": "contracts/RemixerV1.sol:107"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_struct(InitializableStorage)73_storage": {
+            "label": "struct Initializable.InitializableStorage",
+            "members": [
+              {
+                "label": "_initialized",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_initializing",
+                "type": "t_bool",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(OwnableStorage)13_storage": {
+            "label": "struct OwnableUpgradeable.OwnableStorage",
+            "members": [
+              {
+                "label": "_owner",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]",
+            "numberOfBytes": "32"
+          },
+          "t_contract(ISplitv2Factory)579": {
+            "label": "contract ISplitv2Factory",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IZoraFactory)543": {
+            "label": "contract IZoraFactory",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_address,t_struct(CoinData)652_storage)": {
+            "label": "mapping(address => struct RemixerV1.CoinData)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(CoinData)652_storage": {
+            "label": "struct RemixerV1.CoinData",
+            "members": [
+              {
+                "label": "exist",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "parent",
+                "type": "t_address",
+                "offset": 1,
+                "slot": "0"
+              },
+              {
+                "label": "splitAddress",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "owners",
+                "type": "t_array(t_address)dyn_storage",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "revenueShare",
+                "type": "t_uint16",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "revenueStack",
+                "type": "t_uint16",
+                "offset": 2,
+                "slot": "3"
+              },
+              {
+                "label": "children",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "4"
+              }
+            ],
+            "numberOfBytes": "160"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.Ownable": [
+            {
+              "contract": "OwnableUpgradeable",
+              "label": "_owner",
+              "type": "t_address",
+              "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:24",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:69",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:73",
               "offset": 8,
               "slot": "0"
             }

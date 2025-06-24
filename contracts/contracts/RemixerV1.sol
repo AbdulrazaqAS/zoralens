@@ -152,10 +152,11 @@ contract RemixerV1 is Initializable, OwnableUpgradeable {
         string memory uri,
         string memory name,
         string memory symbol,
-        bytes32 coinSalt
+        bytes memory poolConfig
     ) internal returns (address) {
         address[] memory owners = new address[](1);
         owners[0] = address(this);
+        bytes32 salt = keccak256(abi.encodePacked(msg.sender, totalCoins));
 
         (address coin,) = COINS_FACTORY.deploy(
             payoutRecipient,
@@ -163,11 +164,11 @@ contract RemixerV1 is Initializable, OwnableUpgradeable {
             uri,
             name,
             symbol,
-            "",
+            poolConfig,
             address(this),
             address(0),
             "",
-            coinSalt
+            salt
         );
         
         return coin;
@@ -181,7 +182,7 @@ contract RemixerV1 is Initializable, OwnableUpgradeable {
         string memory name,
         string memory symbol,
         uint16 _revenueShare,
-        bytes32 coinSalt
+        bytes memory poolConfig
     ) external {
         _checkCoinExist(_parent);
         // CoinData storage parentCoin = coins[_parent];  // Stack too deep
@@ -196,7 +197,7 @@ contract RemixerV1 is Initializable, OwnableUpgradeable {
         allocations[1] = parentRevenueShare;
         
         address split = _createSplit(recipients, allocations);
-        address coin = _deployCoin(split, uri, name, symbol, coinSalt);
+        address coin = _deployCoin(split, uri, name, symbol, poolConfig);
         
         CoinData memory data = CoinData({
             exist: true,
@@ -222,9 +223,9 @@ contract RemixerV1 is Initializable, OwnableUpgradeable {
         string memory name,
         string memory symbol,
         uint16 _revenueShare,
-        bytes32 coinSalt
+        bytes memory poolConfig
     ) external {
-        address coin = _deployCoin(_payoutRecipient, uri, name, symbol, coinSalt);
+        address coin = _deployCoin(_payoutRecipient, uri, name, symbol, poolConfig);
         
         CoinData memory data = CoinData({
             exist: true,
