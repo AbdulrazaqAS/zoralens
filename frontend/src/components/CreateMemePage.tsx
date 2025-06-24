@@ -11,7 +11,7 @@ import { createCoin, DeployCurrency, validateMetadataJSON } from "@zoralabs/coin
 import { usePublicClient, useWalletClient } from "wagmi"
 import { type Address } from "viem";
 
-const RemixerAddress = import.meta.env.VITE_REMIXER!;
+const RemixerAddress = import.meta.env.VITE_REMIXER_CONTRACT!;
 
 export default function CreateMemePage() {
   const [formData, setFormData] = useState({
@@ -128,7 +128,7 @@ export default function CreateMemePage() {
       const revenueShare = Number(formData.revenueShare ?? "0");
       const creators = ['0xE09b13f723f586bc2D98aa4B0F2C27A0320D20AB'] as Address[];
 
-      if (!name || !symbol || !coinMetadataUri || !payoutRecipient || revenueShare < 0) throw new Error("Invalid inputs");
+      if (!name || !symbol || !coinMetadataUri || !coinPayoutRecipient || revenueShare < 0) throw new Error("Invalid inputs");
 
       // const splitsAddress = await createSplitsContract(payoutRecipient, revenueShare);
       const coinArgs = {
@@ -144,13 +144,10 @@ export default function CreateMemePage() {
       }
       const result = await createCoin(coinArgs, walletClient!, publicClient!);
       if (!result.address) throw new Error("Coin creation failed");
-
-      console.log("Transaction hash:", result.hash);
       console.log("Coin address:", result.address);
-      console.log("Deployment details:", result.deployment);
 
       // Todo: payout can be gotten through contract
-      const txHash = await addRemixerCoin(result.address, payoutRecipient, revenueShare, creators, walletClient!);
+      const txHash = await addRemixerCoin(result.address, coinPayoutRecipient, revenueShare, creators, walletClient!);
       publicClient?.waitForTransactionReceipt({ hash: txHash }).then((txReceipt) => {
         if (txReceipt.status === "reverted") throw new Error("New remixer coin addition reverted");
         else {
