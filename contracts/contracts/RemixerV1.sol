@@ -207,6 +207,47 @@ contract RemixerV1 is Initializable, OwnableUpgradeable {
         emit CoinRemixed(_parent, _child);
     }
 
+    // New/root coins have an address as payout recipient not a split contract
+    function addCoin(address _coin, address _payoutRecipient, uint16 _revenueShare, address[] memory _owners) external {
+        CoinData memory data = CoinData({
+            exist: true,
+            parent: address(0),  // address zero as parent indicates coin is root not remix
+            splitsAddress: _payoutRecipient,
+            owners: _owners,
+            revenueShare: _revenueShare,
+            revenueStack: 0,  // zero for new coin
+            descendants: 0
+        });
+
+        coins[_coin] = data;
+        totalCoins++;
+
+        emit CoinAdded(_coin);
+    }
+
+    // New/root coins have an address as payout recipient not a split contract
+    function addRemix(address _parent, address _child, address _splitsAddress, uint16 _revenueShare, address[] memory _owners) external {
+        _checkCoinExist(_parent);
+        CoinData storage parentCoin = coins[_parent];
+        uint16 revenueStack = parentCoin.revenueStack + parentCoin.revenueShare;
+        
+        CoinData memory data = CoinData({
+            exist: true,
+            parent: _parent,
+            splitsAddress: _splitsAddress,
+            owners: _owners,
+            revenueShare: _revenueShare,
+            revenueStack: revenueStack,
+            descendants: 0
+        });
+
+        coins[_child] = data;
+        totalCoins++;
+        parentCoin.descendants++;
+
+        emit CoinRemixed(_parent, _child);
+    }
+
     function setCoinUri(
         address coin,
         string memory uri
