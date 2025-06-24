@@ -172,7 +172,7 @@ export async function createRemixerCoin(
       name,
       symbol,
       revenueShare,
-      saltStr
+      salt
     ]);
     
     return txHash;

@@ -5,12 +5,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
-import { Coins, Upload, Sparkles, Zap, Trophy, ImageIcon, CheckCircle } from "lucide-react"
+import { Coins, Upload, Sparkles, Zap, Trophy, ImageIcon, CheckCircle, LogsIcon } from "lucide-react"
 import { createRemixerCoin, createSplit, createSplitsClient, uploadFileToIPFS, uploadJsonToIPFS, handleError, handleSuccess } from "../scripts/actions"
 // import { createCoin, DeployCurrency, validateMetadataJSON } from "@zoralabs/coins-sdk";
 import { usePublicClient, useWalletClient } from "wagmi"
 import { type Address } from "viem";
-import { validateMetadataJSON } from "@zoralabs/coins-sdk"
+import { getCoinCreateFromLogs, validateMetadataJSON } from "@zoralabs/coins-sdk"
 
 const RemixerAddress = import.meta.env.VITE_REMIXER_CONTRACT!;
 
@@ -77,33 +77,29 @@ export default function CreateMemePage() {
   }
 
   async function uploadCoinMetadata() {
-    try {
-      const name = formData.memeName.trim();
-      const description = formData.description.trim();
+    const name = formData.memeName.trim();
+    const description = formData.description.trim();
 
-      if (!name || !description || !image) throw new Error("Invalid inputs");
-      const imageCid = await handleUploadFile(image, 10);
-      if (!imageCid) throw new Error("Coin image upload failed");
-      alert('Image uploaded successfully');
+    if (!name || !description || !image) throw new Error("Invalid inputs");
+    const imageCid = await handleUploadFile(image, 10);
+    if (!imageCid) throw new Error("Coin image upload failed");
+    //alert('Image uploaded successfully');
 
-      const metadata = {
-        name,
-        image: `ipfs://${imageCid}`,
-        description,
-      }
-      console.log("Image url:", `https://ipfs.io/ipfs/${imageCid}`);
-
-      validateMetadataJSON(metadata);
-      const metadataCid = await handleUploadMetadata(metadata, `ZoraCoinMetadata_${name.toLowerCase().replace(/\s+/g, "-")}.json`);  // Replace spaces with hyphens in filename
-      // if (!metadataCid) throw new Error("Coin metadata upload failed");
-      const metadataUri = `ipfs://${metadataCid}`;
-      console.log("Metadata url:", `https://ipfs.io/ipfs/${metadataCid}`);
-      alert('Metadata uploaded successfully');
-      // setCoinMetadataUri(metadataUri)
-      return metadataUri;
-    } catch (error) {
-      handleError(error as Error);
+    const metadata = {
+      name,
+      image: `ipfs://${imageCid}`,
+      description,
     }
+    console.log("Image url:", `https://ipfs.io/ipfs/${imageCid}`);
+
+    validateMetadataJSON(metadata);
+    const metadataCid = await handleUploadMetadata(metadata, `ZoraCoinMetadata_${name.toLowerCase().replace(/\s+/g, "-")}.json`);  // Replace spaces with hyphens in filename
+    // if (!metadataCid) throw new Error("Coin metadata upload failed");
+    const metadataUri = `ipfs://${metadataCid}`;
+    console.log("Metadata url:", `https://ipfs.io/ipfs/${metadataCid}`);
+    //alert('Metadata uploaded successfully');
+    // setCoinMetadataUri(metadataUri)
+    return metadataUri;
   }
 
   // async function createSplitsContract(payoutRecipient: Address, revenueShare: number) {
@@ -180,7 +176,7 @@ export default function CreateMemePage() {
 
       const txHash = await createRemixerCoin(
         coinPayoutRecipient,
-        ["0xE09b13f723f586bc2D98aa4B0F2C27A0320D20AB"],
+        creators,
         metadataUri,
         name,
         symbol,
@@ -193,6 +189,12 @@ export default function CreateMemePage() {
         if (txReceipt.status === "reverted") handleError(new Error("New remixer coin addition reverted"));
         else {
           handleSuccess("New coin added successfully!");
+
+          // Get coin address from transaction logs
+          const coinDeployment = getCoinCreateFromLogs(txReceipt);
+          console.log("Deployed coin address:", coinDeployment?.coin);
+          alert('Coin address: ' + coinDeployment?.coin);
+
           setFormData({
             memeName: "",
             tokenSymbol: "",
