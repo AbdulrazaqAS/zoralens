@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { handleError, handleSuccess } from './scripts/actions';
 
 type LogType = 'LOG' | 'WARN' | 'ERROR' | 'ALL';
 
@@ -65,7 +66,8 @@ const interceptConsole = (
     setLogs(updatedLogs);
     saveLogs(updatedLogs);
     
-    alert(formatted);
+    if (method === 'log') handleSuccess(formatted);
+    else handleError(new Error(formatted));
     original.apply(console, args);
   };
 };

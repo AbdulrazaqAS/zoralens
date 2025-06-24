@@ -6,8 +6,8 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
 import { Coins, Upload, Sparkles, Zap, Trophy, ImageIcon, CheckCircle } from "lucide-react"
-import { addRemixerCoin, createSplit, createSplitsClient, uploadFileToIPFS, uploadJsonToIPFS } from "../scripts/actions"
-import { createCoin, DeployCurrency, validateMetadataJSON } from "@zoralabs/coins-sdk";
+import { createRemixerCoin, createSplit, createSplitsClient, uploadFileToIPFS, uploadJsonToIPFS, handleError, handleSuccess } from "../scripts/actions"
+// import { createCoin, DeployCurrency, validateMetadataJSON } from "@zoralabs/coins-sdk";
 import { usePublicClient, useWalletClient } from "wagmi"
 import { type Address } from "viem";
 
@@ -100,28 +100,75 @@ export default function CreateMemePage() {
       // setCoinMetadataUri(metadataUri)
       return metadataUri;
     } catch (error) {
-      alert(error.message);
+      handleError(error);
       console.error(error.message);
     }
   }
 
-  async function createSplitsContract(payoutRecipient: Address, revenueShare: number) {
-    const splitsClient = createSplitsClient(publicClient!.chain.id, publicClient!, walletClient!);
-    const response = await createSplit(
-      [],
-      [],
-      RemixerAddress,
-      RemixerAddress,
-      publicClient!.chain.id,
-      splitsClient
-    );
+  // async function createSplitsContract(payoutRecipient: Address, revenueShare: number) {
+  //   const splitsClient = createSplitsClient(publicClient!.chain.id, publicClient!, walletClient!);
+  //   const response = await createSplit(
+  //     [],
+  //     [],
+  //     RemixerAddress,
+  //     RemixerAddress,
+  //     publicClient!.chain.id,
+  //     splitsClient
+  //   );
 
-    console.log("Splits contract created:", response);
-    return response.splitAddress;
-  }
+  //   console.log("Splits contract created:", response);
+  //   return response.splitAddress;
+  // }
 
-  async function handleCreateCoin(coinMetadataUri: string) {
+  // async function handleCreateCoin(coinMetadataUri: string) {
+  //   try {
+  //     const name = formData.memeName.trim();
+  //     const symbol = formData.tokenSymbol.trim().toUpperCase();
+  //     const coinPayoutRecipient = formData.payoutRecipient as Address;
+  //     const revenueShare = Number(formData.revenueShare ?? "0");
+  //     const creators = ['0xE09b13f723f586bc2D98aa4B0F2C27A0320D20AB'] as Address[];
+
+  //     if (!name || !symbol || !coinMetadataUri || !coinPayoutRecipient || revenueShare < 0) throw new Error("Invalid inputs");
+
+  //     // const splitsAddress = await createSplitsContract(payoutRecipient, revenueShare);
+  //     const coinArgs = {
+  //       name,             // The name of the coin (e.g., "My Awesome Coin")
+  //       symbol,           // The trading symbol for the coin (e.g., "MAC")
+  //       uri: coinMetadataUri,              // Metadata URI (an IPFS URI is recommended)
+  //       chainId: publicClient!.chain.id,         // The chain ID (defaults to base mainnet)
+  //       owners: [RemixerAddress],       // Optional array of owner addresses, defaults to [payoutRecipient]
+  //       payoutRecipient: coinPayoutRecipient, // Address that receives creator earnings
+  //       platformReferrer: RemixerAddress, // Optional platform referrer address, earns referral fees
+  //       // DeployCurrency.ETH or DeployCurrency.ZORA
+  //       currency: DeployCurrency.ETH, // Optional currency for trading (ETH or ZORA)
+  //     }
+  //     const result = await createCoin(coinArgs, walletClient!, publicClient!);
+  //     if (!result.address) throw new Error("Coin creation failed");
+  //     console.log("Coin address:", result.address);
+
+  //     // Todo: payout can be gotten through contract
+  //     const txHash = await addRemixerCoin(result.address, coinPayoutRecipient, revenueShare, creators, walletClient!);
+  //     publicClient?.waitForTransactionReceipt({ hash: txHash }).then((txReceipt) => {
+  //       if (txReceipt.status === "reverted") throw new Error("New remixer coin addition reverted");
+  //       else {
+  //         console.log("New coin added successfully!");
+  //       }
+  //     });
+  //   } catch (error) {
+  //     console.error("Error creating coin:", error);
+  //   }
+  // }
+
+  async function handleSubmit() {
+    if (!walletClient) {
+      handleError(new Error("Wallet not connected"));
+      return;
+    }
+
     try {
+      const metadataUri = await uploadCoinMetadata();
+      if (!metadataUri) throw new Error("Coin metadata upload failed");
+
       const name = formData.memeName.trim();
       const symbol = formData.tokenSymbol.trim().toUpperCase();
       const coinPayoutRecipient = formData.payoutRecipient as Address;
@@ -130,60 +177,35 @@ export default function CreateMemePage() {
 
       if (!name || !symbol || !coinMetadataUri || !coinPayoutRecipient || revenueShare < 0) throw new Error("Invalid inputs");
 
-      // const splitsAddress = await createSplitsContract(payoutRecipient, revenueShare);
-      const coinArgs = {
-        name,             // The name of the coin (e.g., "My Awesome Coin")
-        symbol,           // The trading symbol for the coin (e.g., "MAC")
-        uri: coinMetadataUri,              // Metadata URI (an IPFS URI is recommended)
-        chainId: publicClient!.chain.id,         // The chain ID (defaults to base mainnet)
-        owners: [RemixerAddress],       // Optional array of owner addresses, defaults to [payoutRecipient]
-        payoutRecipient: coinPayoutRecipient, // Address that receives creator earnings
-        platformReferrer: RemixerAddress, // Optional platform referrer address, earns referral fees
-        // DeployCurrency.ETH or DeployCurrency.ZORA
-        currency: DeployCurrency.ETH, // Optional currency for trading (ETH or ZORA)
-      }
-      const result = await createCoin(coinArgs, walletClient!, publicClient!);
-      if (!result.address) throw new Error("Coin creation failed");
-      console.log("Coin address:", result.address);
 
-      // Todo: payout can be gotten through contract
-      const txHash = await addRemixerCoin(result.address, coinPayoutRecipient, revenueShare, creators, walletClient!);
+      const txHash = await createRemixerCoin(
+        coinPayoutRecipient,
+        ["0xE09b13f723f586bc2D98aa4B0F2C27A0320D20AB"],
+        metadataUri,
+        name,
+        symbol,
+        revenueShare,
+        "dont know a salt",
+        walletClient
+      );
+
       publicClient?.waitForTransactionReceipt({ hash: txHash }).then((txReceipt) => {
-        if (txReceipt.status === "reverted") throw new Error("New remixer coin addition reverted");
+        if (txReceipt.status === "reverted") handleError(new Error("New remixer coin addition reverted"));
         else {
-          console.log("New coin added successfully!");
+          handleSuccess("New coin added successfully!");
+          setFormData({
+            memeName: "",
+            tokenSymbol: "",
+            description: "",
+          });
+          setImagePreview(null);
+          setImage(undefined);
+          setCurrentStep(1);
         }
       });
+
     } catch (error) {
-      console.error("Error creating coin:", error);
-    }
-  }
-
-  async function handleSubmit() {
-    if (!walletClient) {
-      console.error("Wallet not connected");
-      return;
-    }
-
-    try {
-      const metadataUri = await uploadCoinMetadata();
-      if (!metadataUri) throw new Error("Coin metadat upload failed");
-
-      await handleCreateCoin(metadataUri);
-
-      // await handleCreateCoin();
-      // Optionally, you can reset the form or navigate to a success page
-      // setFormData({
-      //   memeName: "",
-      //   tokenSymbol: "",
-      //   description: "",
-      // });
-      // setImagePreview(null);
-      // setImage(undefined);
-      // setCurrentStep(1);
-    } catch (error) {
-      alert(error.message);
-      console.error("Error during submission:", error);
+      handleError(error);
     }
   }
 

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { setApiKey } from "@zoralabs/coins-sdk";
 import { NavItems } from "./scripts/utils";
+import { Toaster } from 'sonner';
 
 import NavBar from "./components/Navbar";
 import LandingPage from "./components/LandingPage";
@@ -20,6 +21,8 @@ function App() {
       {currentPage === NavItems.feed && <LandingPage />}
       {currentPage === NavItems.createMeme && <CreateMemePage />}
       {currentPage === NavItems.logs && <LogViewer />}
+
+      <Toaster />
     </>
   )
 }

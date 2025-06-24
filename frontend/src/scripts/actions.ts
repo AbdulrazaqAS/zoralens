@@ -1,7 +1,8 @@
 import { SplitV2Client } from '@0xsplits/splits-sdk';
 import { SplitV2Type } from '@0xsplits/splits-sdk/types';
 import axios from "axios";
-import { getContract, type Address, type PublicClient, type WalletClient } from "viem";
+import { toast } from "sonner";
+import { keccak256, toBytes, getContract, type Address, type PublicClient, type WalletClient } from "viem";
 
 import RemixerABI from "../assets/RemixerABI.json";
 
@@ -73,7 +74,6 @@ export async function uploadFileToIPFS(file: File, filename: string): Promise<st
     endpoint = "/api/uploadFileToIPFS";
   }
 
-  console.log(`Endpoint: ${endpoint}`);
   const response = await axios.post(endpoint, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
@@ -117,8 +117,6 @@ export async function uploadJsonToIPFS(data: any, filename: string): Promise<str
     endpoint = "/api/uploadJSONToIPFS";
   }
 
-  console.log(`Endpoint: ${endpoint}`);
-
   const response = await axios.post(endpoint, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
@@ -149,4 +147,43 @@ export async function addRemixerCoin(coin: Address, payoutRecipient: Address, re
     ]);
     
     return txHash;
+}
+
+export async function createRemixerCoin(
+  payoutRecipient: Address,
+  owners: Address[],
+  uri: string,
+  name: string,
+  symbol: string,
+  revenueShare: number,
+  saltStr: string,
+  client: WalletClient
+): Promise<`0x${string}`> {
+    const contract = getContract({
+        address: RemixerAddress,
+        abi: RemixerABI,
+        client
+    });
+    const salt = keccak256(toBytes(saltStr));
+    const txHash = await contract.write.createCoin([
+      payoutRecipient,
+      owners,
+      uri,
+      name,
+      symbol,
+      revenueShare,
+      saltStr
+    ]);
+    
+    return txHash;
+}
+
+export function handleError(error: Error) {
+    console.error("Error:", error);
+    toast.error(`Error: ${error.message}`);
+}
+
+export function handleSuccess(message: string) {
+    console.log("Success:", message);
+    toast.success(message);
 }

@@ -157,7 +157,7 @@ contract RemixerV1 is Initializable, OwnableUpgradeable {
         address[] memory owners = new address[](1);
         owners[0] = address(this);
 
-        (address coin, bytes memory postDeployHookDataOut) = COINS_FACTORY.deploy(
+        (address coin,) = COINS_FACTORY.deploy(
             payoutRecipient,
             owners,
             uri,
@@ -184,12 +184,12 @@ contract RemixerV1 is Initializable, OwnableUpgradeable {
         bytes32 coinSalt
     ) external {
         _checkCoinExist(_parent);
-        CoinData storage parentCoin = coins[_parent];
-        uint16 parentRevenueShare = parentCoin.revenueStack + parentCoin.revenueShare;
+        // CoinData storage parentCoin = coins[_parent];  // Stack too deep
+        uint16 parentRevenueShare = coins[_parent].revenueStack + coins[_parent].revenueShare;
         
         address[] memory recipients = new address[](2);
         recipients[0] = _payoutRecipient;
-        recipients[1] = parentCoin.splitAddress;
+        recipients[1] = coins[_parent].splitAddress;
         
         uint256[] memory allocations = new uint256[](2);
         allocations[0] = TOTAL_ALLOCATION - DISTRIBUTOR_INCENTIVE - parentRevenueShare;
@@ -210,7 +210,7 @@ contract RemixerV1 is Initializable, OwnableUpgradeable {
 
         coins[coin] = data;
         totalCoins++;
-        parentCoin.children++;
+        coins[_parent].children++;
 
         emit CoinRemixed(_parent, coin);
     }
