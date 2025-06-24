@@ -181,7 +181,6 @@ export default function CreateMemePage() {
         name,
         symbol,
         revenueShare,
-        "dont know a salt",
         walletClient
       );
 

@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { keccak256, toBytes, getContract, type Address, type PublicClient, type WalletClient } from "viem";
 
 import RemixerABI from "../assets/RemixerABI.json";
+import { PoolConfig } from './utils';
 
 const RemixerAddress = import.meta.env.VITE_REMIXER_CONTRACT!;
 const SplitsApiKey = import.meta.env.VITE_SPLITS_API_KEY!;
@@ -156,7 +157,6 @@ export async function createRemixerCoin(
   name: string,
   symbol: string,
   revenueShare: number,
-  saltStr: string,
   client: WalletClient
 ): Promise<`0x${string}`> {
     const contract = getContract({
@@ -164,7 +164,6 @@ export async function createRemixerCoin(
         abi: RemixerABI,
         client
     });
-    const salt = keccak256(toBytes(saltStr));
     const txHash = await contract.write.createCoin([
       payoutRecipient,
       owners,
@@ -172,7 +171,7 @@ export async function createRemixerCoin(
       name,
       symbol,
       revenueShare,
-      salt
+      PoolConfig
     ]);
     
     return txHash;
