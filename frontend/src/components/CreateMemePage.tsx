@@ -10,6 +10,7 @@ import { createRemixerCoin, createSplit, createSplitsClient, uploadFileToIPFS, u
 // import { createCoin, DeployCurrency, validateMetadataJSON } from "@zoralabs/coins-sdk";
 import { usePublicClient, useWalletClient } from "wagmi"
 import { type Address } from "viem";
+import { validateMetadataJSON } from "@zoralabs/coins-sdk"
 
 const RemixerAddress = import.meta.env.VITE_REMIXER_CONTRACT!;
 
@@ -83,6 +84,7 @@ export default function CreateMemePage() {
       if (!name || !description || !image) throw new Error("Invalid inputs");
       const imageCid = await handleUploadFile(image, 10);
       if (!imageCid) throw new Error("Coin image upload failed");
+      alert('Image uploaded successfully');
 
       const metadata = {
         name,
@@ -96,12 +98,11 @@ export default function CreateMemePage() {
       // if (!metadataCid) throw new Error("Coin metadata upload failed");
       const metadataUri = `ipfs://${metadataCid}`;
       console.log("Metadata url:", `https://ipfs.io/ipfs/${metadataCid}`);
-
+      alert('Metadata uploaded successfully');
       // setCoinMetadataUri(metadataUri)
       return metadataUri;
     } catch (error) {
-      handleError(error);
-      console.error(error.message);
+      handleError(error as Error);
     }
   }
 
@@ -175,8 +176,7 @@ export default function CreateMemePage() {
       const revenueShare = Number(formData.revenueShare ?? "0");
       const creators = ['0xE09b13f723f586bc2D98aa4B0F2C27A0320D20AB'] as Address[];
 
-      if (!name || !symbol || !coinMetadataUri || !coinPayoutRecipient || revenueShare < 0) throw new Error("Invalid inputs");
-
+      if (!name || !symbol || !coinPayoutRecipient || revenueShare < 0) throw new Error("Invalid inputs");
 
       const txHash = await createRemixerCoin(
         coinPayoutRecipient,
@@ -197,7 +197,10 @@ export default function CreateMemePage() {
             memeName: "",
             tokenSymbol: "",
             description: "",
+            payoutRecipient: "",
+            revenueShare: "",
           });
+
           setImagePreview(null);
           setImage(undefined);
           setCurrentStep(1);
@@ -205,7 +208,7 @@ export default function CreateMemePage() {
       });
 
     } catch (error) {
-      handleError(error);
+      handleError(error as Error);
     }
   }
 

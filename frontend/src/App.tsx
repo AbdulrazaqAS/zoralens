@@ -7,7 +7,7 @@ import NavBar from "./components/Navbar";
 import LandingPage from "./components/LandingPage";
 import CreateMemePage from "./components/CreateMemePage";
 
-import LogViewer from './LogViewer';
+//import LogViewer from './LogViewer';
 
 // Set up your API key before making any SDK requests
 setApiKey(import.meta.env.VITE_ZORA_API_KEY);
@@ -20,7 +20,7 @@ function App() {
       <NavBar currentPage={currentPage} setCurrentPage={setCurrentPage} />
       {currentPage === NavItems.feed && <LandingPage />}
       {currentPage === NavItems.createMeme && <CreateMemePage />}
-      {currentPage === NavItems.logs && <LogViewer />}
+      {currentPage === NavItems.logs && <p>No logs</p>}
 
       <Toaster />
     </>
