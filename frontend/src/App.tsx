@@ -4,7 +4,7 @@ import { NavItems } from "./scripts/utils";
 import { Toaster } from 'sonner';
 
 import NavBar from "./components/Navbar";
-import LandingPage from "./components/LandingPage";
+import PortfolioPage from "./components/PortfolioPage";
 import CreateMemePage from "./components/CreateMemePage";
 
 //import LogViewer from './LogViewer';
@@ -18,8 +18,7 @@ function App() {
   return (
     <>
       <NavBar currentPage={currentPage} setCurrentPage={setCurrentPage} />
-      {currentPage === NavItems.feed && <LandingPage />}
-      {currentPage === NavItems.createMeme && <CreateMemePage />}
+      {currentPage === NavItems.feed && <PortfolioPage />}
       {currentPage === NavItems.logs && <p>No logs</p>}
 
       <Toaster />
