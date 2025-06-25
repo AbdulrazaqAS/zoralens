@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { fetchSingleCoin, fetchUserProfile, fetchAllUserBalances } from "../scripts/getters";
 
 const mockCoins = [
   {
@@ -35,7 +36,16 @@ export default function DashboardPage() {
   const { address } = useAccount();
   const [loading, setLoading] = useState(true);
   const [coins, setCoins] = useState<typeof mockCoins>([]);
-
+  
+  useEffect(() => {
+    // fetchUserProfile("AbdulrazaqAS").then(console.log).catch(console.error);
+    fetchAllUserBalances("AbdulrazaqAS").then(bals => {
+      const balsStr = JSON.stringify(bals);
+      alert(balsStr);
+    }).catch(console.error);
+    // fetchSingleCoin("0x445e9c0a296068dc4257767b5ed354b77cf513de", base.id).then(console.log).catch(console.error);
+  }, []);
+  
   useEffect(() => {
     // Simulate loading delay — replace with real fetch later
     setTimeout(() => {
