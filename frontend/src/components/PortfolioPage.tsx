@@ -3,7 +3,11 @@ import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { fetchSingleCoin, fetchUserProfile, fetchAllUserBalances } from "../scripts/getters";
+import {
+  fetchSingleCoin,
+  fetchUserProfile,
+  fetchAllUserBalances,
+} from "../scripts/getters";
 import PortfolioChart from "./PortfolioChart";
 
 const mockCoins = [
@@ -34,19 +38,22 @@ const mockCoins = [
 ];
 
 export default function DashboardPage() {
-  const { address } = useAccount();
+  //const { address } = useAccount();
   const [loading, setLoading] = useState(true);
   const [coins, setCoins] = useState<typeof mockCoins>([]);
-  
+
+  const address = true;
   useEffect(() => {
     // fetchUserProfile("AbdulrazaqAS").then(console.log).catch(console.error);
-    fetchAllUserBalances("AbdulrazaqAS").then(bals => {
-      const balsStr = JSON.stringify(bals);
-      alert(balsStr);
-    }).catch(console.error);
+    fetchAllUserBalances("AbdulrazaqAS")
+      .then((bals) => {
+        const balsStr = JSON.stringify(bals);
+        alert(balsStr);
+      })
+      .catch(console.error);
     // fetchSingleCoin("0x445e9c0a296068dc4257767b5ed354b77cf513de", base.id).then(console.log).catch(console.error);
   }, []);
-  
+
   useEffect(() => {
     // Simulate loading delay — replace with real fetch later
     setTimeout(() => {
@@ -60,7 +67,9 @@ export default function DashboardPage() {
       <h1 className="text-2xl font-bold mb-6 text-gray-800">My Zora Coins</h1>
 
       {!address ? (
-        <div className="text-gray-500">Please connect your wallet to view your dashboard.</div>
+        <div className="text-gray-500">
+          Please connect your wallet to view your dashboard.
+        </div>
       ) : loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {Array.from({ length: 3 }).map((_, i) => (
@@ -100,7 +109,7 @@ export default function DashboardPage() {
                       {coin.change24h.toFixed(2)}%
                     </span>
                   </div>
-  
+
                   <div className="text-sm text-gray-700">
                     Holding: <strong>{coin.amountHeld}</strong>
                   </div>
@@ -113,8 +122,11 @@ export default function DashboardPage() {
                       {(coin.amountHeld * coin.price).toFixed(4)} ETH
                     </strong>
                   </div>
-  
-                  <Button variant="outline" className="mt-2 w-fit hover:ring-2 hover:ring-yellow-400">
+
+                  <Button
+                    variant="outline"
+                    className="mt-2 w-fit hover:ring-2 hover:ring-yellow-400"
+                  >
                     View on Zora
                   </Button>
                 </CardContent>
