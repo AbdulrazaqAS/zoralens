@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { fetchSingleCoin, fetchUserProfile, fetchAllUserBalances } from "../scripts/getters";
+import PortfolioChart from "./PortfolioChart";
 
 const mockCoins = [
   {
@@ -69,47 +70,57 @@ export default function DashboardPage() {
       ) : coins.length === 0 ? (
         <div className="text-gray-500">You don't hold any Zora Coins yet.</div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {coins.map((coin, i) => (
-            <Card key={i} className="rounded-2xl border shadow-sm">
-              <CardContent className="p-4 flex flex-col gap-3">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-3">
-                    <div className="text-2xl">{coin.logo}</div>
-                    <div>
-                      <h2 className="text-lg font-semibold">{coin.name}</h2>
-                      <p className="text-sm text-gray-500">${coin.symbol}</p>
+        <div className="space-y-4">
+          {!loading && coins.length > 0 && (
+            <PortfolioChart
+              coins={coins.map((coin) => ({
+                name: coin.symbol,
+                value: coin.amountHeld * coin.price,
+              }))}
+            />
+          )}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {coins.map((coin, i) => (
+              <Card key={i} className="rounded-2xl border shadow-sm">
+                <CardContent className="p-4 flex flex-col gap-3">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <div className="text-2xl">{coin.logo}</div>
+                      <div>
+                        <h2 className="text-lg font-semibold">{coin.name}</h2>
+                        <p className="text-sm text-gray-500">${coin.symbol}</p>
+                      </div>
                     </div>
+                    <span
+                      className={`text-sm font-medium ${
+                        coin.change24h > 0 ? "text-green-500" : "text-red-500"
+                      }`}
+                    >
+                      {coin.change24h > 0 ? "+" : ""}
+                      {coin.change24h.toFixed(2)}%
+                    </span>
                   </div>
-                  <span
-                    className={`text-sm font-medium ${
-                      coin.change24h > 0 ? "text-green-500" : "text-red-500"
-                    }`}
-                  >
-                    {coin.change24h > 0 ? "+" : ""}
-                    {coin.change24h.toFixed(2)}%
-                  </span>
-                </div>
-
-                <div className="text-sm text-gray-700">
-                  Holding: <strong>{coin.amountHeld}</strong>
-                </div>
-                <div className="text-sm text-gray-700">
-                  Current Price: <strong>{coin.price} ETH</strong>
-                </div>
-                <div className="text-sm text-gray-700">
-                  Value:{" "}
-                  <strong>
-                    {(coin.amountHeld * coin.price).toFixed(4)} ETH
-                  </strong>
-                </div>
-
-                <Button variant="outline" className="mt-2 w-fit hover:ring-2 hover:ring-yellow-400">
-                  View on Zora
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+  
+                  <div className="text-sm text-gray-700">
+                    Holding: <strong>{coin.amountHeld}</strong>
+                  </div>
+                  <div className="text-sm text-gray-700">
+                    Current Price: <strong>{coin.price} ETH</strong>
+                  </div>
+                  <div className="text-sm text-gray-700">
+                    Value:{" "}
+                    <strong>
+                      {(coin.amountHeld * coin.price).toFixed(4)} ETH
+                    </strong>
+                  </div>
+  
+                  <Button variant="outline" className="mt-2 w-fit hover:ring-2 hover:ring-yellow-400">
+                    View on Zora
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       )}
     </div>
