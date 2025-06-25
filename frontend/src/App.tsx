@@ -22,7 +22,7 @@ function App() {
     <>
       <NavBar currentPage={currentPage} setCurrentPage={setCurrentPage} />
       {currentPage === NavItems.feed && <PortfolioPage />}
-      (currentPage === NavItems.explore && <ExplorePage />)
+      {currentPage === NavItems.explore && <ExplorePage />}
       {currentPage === NavItems.logs && <p>No logs</p>}
       <Toaster />
     </>
