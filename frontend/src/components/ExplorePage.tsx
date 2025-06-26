@@ -1,63 +1,64 @@
 import { useEffect, useState } from "react";
-import {
-  getCoinsTopGainers,
-  getCoinsTopVolume24h,
-  getCoinsMostValuable,
-  getCoinsNew,
-} from "@zoralabs/coins-sdk";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import {
+  fetchMostValuableCoins,
+  fetchNewCoins,
+  fetchTopGainers,
+  fetchTopVolumeCoins,
+} from "@/scripts/getters";
+import type { Zora20Token } from "@/scripts/utils";
 
-type Coin = {
-  name: string;
-  symbol: string;
-  image?: string;
-  price: string;
-  volume24h: string;
-  marketCap: string;
-  contractAddress: string;
-};
-
-const fetchData = async (
-  label: string,
-  fn: () => Promise<any>
-): Promise<{ label: string; coins: Coin[] }> => {
-  const res = await fn();
-  const data = res.data?.coins || [];
-  return {
-    label,
-    coins: data.map((c: any) => ({
-      name: c.name,
-      symbol: c.symbol,
-      image: c.media?.previewImage || "🪙",
-      price: c.price,
-      volume24h: c.volume24h,
-      marketCap: c.marketCap,
-      contractAddress: c.contractAddress,
-    })),
-  };
-};
+type Categories = "Top Gainers" | "Most Valuable" | "New Coins" | "High Volume";
 
 export default function ExplorePage() {
-  const [sections, setSections] = useState<{ label: string; coins: Coin[] }[]>(
-    []
-  );
+  const [sections, setSections] = useState<
+    { label: Categories; coins: Zora20Token[] }[]
+  >([]);
   const [loading, setLoading] = useState(true);
+  const [coinsAmount, setCoinsAmount] = useState(5);
 
   useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      const result = await Promise.all([
-        fetchData("Top Gainers", getCoinsTopGainers),
-        fetchData("Most Valuable", getCoinsMostValuable),
-        fetchData("New Coins", getCoinsNew),
-        fetchData("High Volume", getCoinsTopVolume24h),
-      ]);
-      setSections(result);
-      setLoading(false);
-    };
-    load();
+    fetchTopGainers(coinsAmount)
+      .then((coins) => {
+        if (!coins)
+          setSections((prev) => [...prev, { label: "Top Gainers", coins: [] }]);
+        else setSections((prev) => [...prev, { label: "Top Gainers", coins }]);
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+
+    fetchMostValuableCoins(coinsAmount)
+      .then((coins) => {
+        if (!coins)
+          setSections((prev) => [
+            ...prev,
+            { label: "Most Valuable", coins: [] },
+          ]);
+        else
+          setSections((prev) => [...prev, { label: "Most Valuable", coins }]);
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+
+    fetchTopVolumeCoins(coinsAmount)
+      .then((coins) => {
+        if (!coins)
+          setSections((prev) => [...prev, { label: "High Volume", coins: [] }]);
+        else setSections((prev) => [...prev, { label: "High Volume", coins }]);
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+
+    fetchNewCoins(coinsAmount)
+      .then((coins) => {
+        if (!coins)
+          setSections((prev) => [...prev, { label: "New Coins", coins: [] }]);
+        else setSections((prev) => [...prev, { label: "New Coins", coins }]);
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, []);
 
   return (
@@ -77,49 +78,66 @@ export default function ExplorePage() {
               {section.label}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-              {section.coins.map((coin, j) => (
-                <Card
-                  key={j}
-                  className="rounded-2xl shadow-sm border hover:shadow-lg transition"
-                >
-                  <CardContent className="p-4 flex flex-col gap-3">
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-2">
-                        <div className="text-2xl">{coin.image}</div>
-                        <div>
-                          <div className="font-bold">{coin.name}</div>
-                          <div className="text-sm text-gray-500">
-                            ${coin.symbol}
+              {section.coins.map(
+                (coin, j) =>
+                  coin && (
+                    <Card
+                      key={j}
+                      className="rounded-2xl shadow-sm border hover:shadow-lg transition"
+                    >
+                      <CardContent className="p-4 flex flex-col gap-3">
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-2">
+                            {/* <div className="text-2xl">{coin.image}</div> */}
+                            <div>
+                              <div className="font-bold">{coin.name}</div>
+                              <div className="text-sm text-gray-500">
+                                ${coin.symbol}
+                              </div>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </div>
 
-                    <div className="text-sm text-gray-700">
-                      Price: <strong>{coin.price || "0"} ETH</strong>
-                    </div>
-                    <div className="text-sm text-gray-700">
-                      24h Volume: <strong>{coin.volume24h || "0"}</strong>
-                    </div>
-                    <div className="text-sm text-gray-700">
-                      Market Cap: <strong>{coin.marketCap || "0"}</strong>
-                    </div>
+                        <div className="text-sm text-gray-700">
+                          Price:{" "}
+                          <strong>
+                            {+coin.marketCap / +coin.totalSupply || "0"} USD
+                          </strong>
+                        </div>
+                        <div className="text-sm text-gray-700">
+                          24h Volume:{" "}
+                          <strong>{coin.volume24h || "0"} USD</strong>
+                        </div>
+                        <div className="text-sm text-gray-700">
+                          24h Change:{" "}
+                          <strong>
+                            {parseFloat(coin.marketCapDelta24h).toFixed(2)}%
+                          </strong>
+                        </div>
+                        <div className="text-sm text-gray-700">
+                          Market Cap:{" "}
+                          <strong>{coin.marketCap || "0"} USD</strong>
+                        </div>
+                        <div className="text-sm text-gray-700">
+                          Holders: <strong>{coin.uniqueHolders}</strong>
+                        </div>
 
-                    <Button
-                      variant="outline"
-                      className="mt-2 w-fit hover:ring-2 hover:ring-yellow-400 text-indigo-600"
-                      onClick={() =>
-                        window.open(
-                          `https://zora.co/collect/zora:${coin.contractAddress}`,
-                          "_blank"
-                        )
-                      }
-                    >
-                      View on Zora
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
+                        <Button
+                          variant="outline"
+                          className="mt-2 w-fit hover:ring-2 hover:ring-yellow-400 text-indigo-600"
+                          onClick={() =>
+                            window.open(
+                              `https://zora.co/coin/base:${coin.address}`,
+                              "_blank"
+                            )
+                          }
+                        >
+                          View on Zora
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  )
+              )}
             </div>
           </div>
         ))

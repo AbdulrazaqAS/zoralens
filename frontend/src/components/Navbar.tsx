@@ -1,17 +1,22 @@
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
-import { NavItems } from "../scripts/utils";
+import { NavItems, type ProfileData } from "../scripts/utils";
 
-import ConnectWallet from './ConnectWallet'
 import { Button } from "@/components/ui/button"
 
 interface Props {
   currentPage: string;
+  user?: ProfileData;
   setCurrentPage: Function;
+  logout: Function;
 }
 
-export default function Navbar({currentPage, setCurrentPage} : Props) {
+export default function Navbar({currentPage, setCurrentPage, user, logout} : Props) {
   const [menuOpen, setMenuOpen] = useState(false);
+
+  function handleLogout() {
+    logout();
+  }
 
   return (
     <nav className="bg-white mb-5 border-b border-gray-200 text-gray-900 shadow-sm">
@@ -36,9 +41,16 @@ export default function Navbar({currentPage, setCurrentPage} : Props) {
         </div>
 
         {/* Connect Button */}
-        <div className="hidden md:block">
-          <ConnectWallet />
-        </div>
+        {user && (
+          <div className="hidden md:block">
+            <button
+              onClick={handleLogout}
+              className="hover:text-indigo-600 transition font-medium"
+            >
+              Logout
+            </button>
+          </div>
+        )}
 
         {/* Mobile Menu Toggle */}
         <div className="md:hidden">
@@ -65,7 +77,15 @@ export default function Navbar({currentPage, setCurrentPage} : Props) {
               {item}
             </button>
           ))}
-          <ConnectWallet />
+
+          {user && (
+            <button
+              onClick={handleLogout}
+              className="hover:text-indigo-600 transition font-medium"
+            >
+              Logout
+            </button>
+          )}
         </div>
       )}
     </nav>

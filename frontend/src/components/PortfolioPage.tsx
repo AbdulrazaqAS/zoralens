@@ -1,14 +1,14 @@
-import { useAccount } from "wagmi";
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import {
-  fetchSingleCoin,
   fetchUserProfile,
   fetchAllUserBalances,
 } from "../scripts/getters";
 import PortfolioChart from "./PortfolioChart";
+import LoginForm from "./LoginForm";
+import { type ProfileData } from "@/scripts/utils";
 
 const mockCoins = [
   {
@@ -37,27 +37,35 @@ const mockCoins = [
   },
 ];
 
-export default function DashboardPage() {
-  //const { address } = useAccount();
+interface Props {
+  user?: ProfileData;
+  login: Function;
+  prevUsername?: string;
+  isSigningIn: boolean;
+  setCurrentPage: Function;
+}
+
+export default function DashboardPage({user, prevUsername, isSigningIn, setCurrentPage, login}: Props) {
   const [loading, setLoading] = useState(true);
   const [coins, setCoins] = useState<typeof mockCoins>([]);
 
-  const address = true;
   useEffect(() => {
     // fetchUserProfile("AbdulrazaqAS").then(console.log).catch(console.error);
+    fetchUserProfile("0x46a7747626ca744fbade35c9f5e16d1b789cb16e")
+      .then(console.log)
+      .catch(console.error);
+
     fetchAllUserBalances("AbdulrazaqAS")
       .then((bals) => {
-        const balsStr = JSON.stringify(bals);
-        alert(balsStr);
+        console.log(bals);
       })
       .catch(console.error);
-    // fetchSingleCoin("0x445e9c0a296068dc4257767b5ed354b77cf513de", base.id).then(console.log).catch(console.error);
   }, []);
 
   useEffect(() => {
     // Simulate loading delay — replace with real fetch later
     setTimeout(() => {
-      setCoins(mockCoins);
+      // setCoins(mockCoins);
       setLoading(false);
     }, 1000);
   }, []);
@@ -66,9 +74,9 @@ export default function DashboardPage() {
     <div className="min-h-screen px-4 py-8 max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold mb-6 text-gray-800">My Zora Coins</h1>
 
-      {!address ? (
-        <div className="text-gray-500">
-          Please connect your wallet to view your dashboard.
+      {!user ? (
+        <div className="">
+          <LoginForm login={login} prevUsername={prevUsername} isSigningIn={isSigningIn} setCurrentPage={setCurrentPage} />
         </div>
       ) : loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -77,7 +85,18 @@ export default function DashboardPage() {
           ))}
         </div>
       ) : coins.length === 0 ? (
-        <div className="text-gray-500">You don't hold any Zora Coins yet.</div>
+        <div>
+          <div className="text-gray-500">
+            You don't hold any Zora Coins yet.
+          </div>
+          <Button
+            variant="outline"
+            className="mt-4 w-fit hover:ring-2 hover:ring-yellow-400 text-indigo-600"
+            onClick={() => window.open(`https://zora.co/@${user.handle}`, "_blank")}
+          >
+            Buy/Create Coins on Zora
+          </Button>
+        </div>
       ) : (
         <div className="space-y-4">
           {!loading && coins.length > 0 && (

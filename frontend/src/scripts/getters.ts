@@ -1,12 +1,17 @@
-import { type Address, type PublicClient } from "viem";
-import { getCoin, getCoins, getProfile, getProfileBalances } from "@zoralabs/coins-sdk";
-import { type RemixCoinMetadata } from "./utils";
+import { type Address} from "viem";
+import {
+  getCoin,
+  getCoins,
+  getCoinsMostValuable,
+  getCoinsNew,
+  getCoinsTopGainers,
+  getCoinsTopVolume24h,
+  getProfile,
+  getProfileBalances,
+} from "@zoralabs/coins-sdk";
+import type { ProfileData, Zora20Token } from "./utils";
 
-import RemixerABI from "../assets/RemixerABI.json";
-
-const RemixerAddress = import.meta.env.VITE_REMIXER_CONTRACT!;
-
-export async function fetchUserProfile(identifier: Address | string) {
+export async function fetchUserProfile(identifier: Address | string): Promise<ProfileData> {
   const response = await getProfile({
     identifier,
   });
@@ -14,9 +19,10 @@ export async function fetchUserProfile(identifier: Address | string) {
   // TODO: fix profile graphql types
   const profile: any = response?.data?.profile;
 
-  if (!profile) console.error("Profile not found or user has not set up a profile");
+  if (!profile)
+    console.error("Profile not found or user has not set up a profile");
 
-  return response?.data?.profile;
+  return response?.data?.profile as unknown as ProfileData;
 }
 
 export async function fetchAllUserBalances(identifier: Address | string) {
@@ -36,7 +42,10 @@ export async function fetchAllUserBalances(identifier: Address | string) {
 
     // Add balances to our collection
     if (profile && profile.coinBalances) {
-      allBalances = [...allBalances, ...profile.coinBalances.edges.map((edge: any) => edge.node)];
+      allBalances = [
+        ...allBalances,
+        ...profile.coinBalances.edges.map((edge: any) => edge.node),
+      ];
     }
 
     // Update cursor for next page
@@ -46,7 +55,6 @@ export async function fetchAllUserBalances(identifier: Address | string) {
     if (!cursor || profile?.coinBalances?.edges?.length === 0) {
       break;
     }
-
   } while (true);
 
   return allBalances;
@@ -81,13 +89,16 @@ export async function fetchSingleCoin(addr: Address, chainId: number) {
   return response.data?.zora20Token;
 }
 
-export async function fetchMultipleCoins(coinsAddr: Address[], chainId: number) {
-  const coins = coinsAddr.map(addr => {
-    return { chainId, collectionAddress: addr }
+export async function fetchMultipleCoins(
+  coinsAddr: Address[],
+  chainId: number
+) {
+  const coins = coinsAddr.map((addr) => {
+    return { chainId, collectionAddress: addr };
   });
 
   const response = await getCoins({
-    coins
+    coins,
   });
 
   // Process each coin in the response
@@ -102,18 +113,62 @@ export async function fetchMultipleCoins(coinsAddr: Address[], chainId: number) 
   return response.data?.zora20Tokens;
 }
 
-export async function getRemixCoin(coin: Address, client: PublicClient): Promise<RemixCoinMetadata> {
-    const details = await client.readContract({
-        address: RemixerAddress,
-        functionName: 'coins',
-        args: [coin],
-        abi: RemixerABI
-    }) as [boolean, Address, bigint, bigint];
+export async function fetchTopGainers(
+  amount?: number
+): Promise<Zora20Token[] | undefined> {
+  const response = await getCoinsTopGainers({
+    count: amount ?? 10, // Optional: number of coins per page
+    after: undefined, // Optional: for pagination
+  });
 
-    return {
-        exist: details[0],
-        splitsAddress: details[1],
-        revenueShare: details[2],
-        revenueStack: details[3],
-    } as RemixCoinMetadata;
+  const tokens = response.data?.exploreList?.edges?.map(
+    (edge: any) => edge.node
+  );
+
+  return tokens as Zora20Token[] | undefined;
+}
+
+export async function fetchMostValuableCoins(
+  amount?: number
+): Promise<Zora20Token[] | undefined> {
+  const response = await getCoinsMostValuable({
+    count: amount ?? 10, // Optional: number of coins per page
+    after: undefined, // Optional: for pagination
+  });
+
+  const tokens = response.data?.exploreList?.edges?.map(
+    (edge: any) => edge.node
+  );
+
+  return tokens as Zora20Token[] | undefined;
+}
+
+export async function fetchNewCoins(
+  amount?: number
+): Promise<Zora20Token[] | undefined> {
+  const response = await getCoinsNew({
+    count: amount ?? 10, // Optional: number of coins per page
+    after: undefined, // Optional: for pagination
+  });
+
+  const tokens = response.data?.exploreList?.edges?.map(
+    (edge: any) => edge.node
+  );
+
+  return tokens as Zora20Token[] | undefined;
+}
+
+export async function fetchTopVolumeCoins(
+  amount?: number
+): Promise<Zora20Token[] | undefined> {
+  const response = await getCoinsTopVolume24h({
+    count: amount ?? 10, // Optional: number of coins per page
+    after: undefined, // Optional: for pagination
+  });
+
+  const tokens = response.data?.exploreList?.edges?.map(
+    (edge: any) => edge.node
+  );
+
+  return tokens as Zora20Token[] | undefined;
 }
