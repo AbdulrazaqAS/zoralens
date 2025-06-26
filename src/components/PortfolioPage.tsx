@@ -2,13 +2,11 @@ import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import {
-  fetchUserProfile,
-  fetchAllUserBalances,
-} from "../scripts/getters";
+import { fetchUserProfile, fetchAllUserBalances } from "../scripts/getters";
 import PortfolioChart from "./PortfolioChart";
 import LoginForm from "./LoginForm";
-import { type ProfileData } from "@/scripts/utils";
+import { type CoinMetadata, type ProfileData } from "@/scripts/utils";
+import { formatEther } from "viem";
 
 const mockCoins = [
   {
@@ -45,9 +43,15 @@ interface Props {
   setCurrentPage: Function;
 }
 
-export default function DashboardPage({user, prevUsername, isSigningIn, setCurrentPage, login}: Props) {
+export default function DashboardPage({
+  user,
+  prevUsername,
+  isSigningIn,
+  setCurrentPage,
+  login,
+}: Props) {
   const [loading, setLoading] = useState(true);
-  const [coins, setCoins] = useState<typeof mockCoins>([]);
+  const [coins, setCoins] = useState<CoinMetadata[]>([]);
 
   useEffect(() => {
     // fetchUserProfile("AbdulrazaqAS").then(console.log).catch(console.error);
@@ -58,6 +62,7 @@ export default function DashboardPage({user, prevUsername, isSigningIn, setCurre
     fetchAllUserBalances("AbdulrazaqAS")
       .then((bals) => {
         console.log(bals);
+        setCoins(bals);
       })
       .catch(console.error);
   }, []);
@@ -76,7 +81,12 @@ export default function DashboardPage({user, prevUsername, isSigningIn, setCurre
 
       {!user ? (
         <div className="">
-          <LoginForm login={login} prevUsername={prevUsername} isSigningIn={isSigningIn} setCurrentPage={setCurrentPage} />
+          <LoginForm
+            login={login}
+            prevUsername={prevUsername}
+            isSigningIn={isSigningIn}
+            setCurrentPage={setCurrentPage}
+          />
         </div>
       ) : loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -92,7 +102,9 @@ export default function DashboardPage({user, prevUsername, isSigningIn, setCurre
           <Button
             variant="outline"
             className="mt-4 w-fit hover:ring-2 hover:ring-yellow-400 text-indigo-600"
-            onClick={() => window.open(`https://zora.co/@${user.handle}`, "_blank")}
+            onClick={() =>
+              window.open(`https://zora.co/@${user.handle}`, "_blank")
+            }
           >
             Buy/Create Coins on Zora
           </Button>
@@ -102,8 +114,8 @@ export default function DashboardPage({user, prevUsername, isSigningIn, setCurre
           {!loading && coins.length > 0 && (
             <PortfolioChart
               coins={coins.map((coin) => ({
-                name: coin.symbol,
-                value: coin.amountHeld * coin.price,
+                name: coin.coin!.symbol,
+                value: Number(coin.value),
               }))}
             />
           )}
@@ -113,37 +125,58 @@ export default function DashboardPage({user, prevUsername, isSigningIn, setCurre
                 <CardContent className="p-4 flex flex-col gap-3">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-3">
-                      <div className="text-2xl">{coin.logo}</div>
+                      {/* <div className="text-2xl">{coin.logo}</div> */}
+                      <div className="text-2xl">{coin.coin?.symbol}</div>
                       <div>
-                        <h2 className="text-lg font-semibold">{coin.name}</h2>
-                        <p className="text-sm text-gray-500">${coin.symbol}</p>
+                        <h2 className="text-lg font-semibold">
+                          {coin.coin?.name}
+                        </h2>
+                        <p className="text-sm text-gray-500">
+                          ${coin.coin?.symbol}
+                        </p>
                       </div>
                     </div>
-                    <span
+                    {/* <span
                       className={`text-sm font-medium ${
                         coin.change24h > 0 ? "text-green-500" : "text-red-500"
                       }`}
                     >
                       {coin.change24h > 0 ? "+" : ""}
                       {coin.change24h.toFixed(2)}%
+                    </span> */}
+                    <span
+                      className={`text-sm font-medium ${
+                        +coin.coin!.marketCapDelta24h > 0
+                          ? "text-green-500"
+                          : "text-red-500"
+                      }`}
+                    >
+                      {+coin.coin!.marketCapDelta24h > 0 ? "+" : ""}
+                      {Number(coin.coin?.marketCapDelta24h).toFixed(2)}%
                     </span>
                   </div>
 
                   <div className="text-sm text-gray-700">
-                    Holding: <strong>{coin.amountHeld}</strong>
+                    Holding:{" "}
+                    <strong>{Number(coin.balanceEther).toFixed(2)}</strong>
                   </div>
                   <div className="text-sm text-gray-700">
-                    Current Price: <strong>{coin.price} ETH</strong>
+                    Current Price:{" "}
+                    <strong>{coin.price.toLocaleString()} USD</strong>
                   </div>
                   <div className="text-sm text-gray-700">
                     Value:{" "}
-                    <strong>
-                      {(coin.amountHeld * coin.price).toFixed(4)} ETH
-                    </strong>
+                    <strong>{coin.value.toString().slice(0, 7)} USD</strong>
                   </div>
 
                   <Button
                     variant="outline"
+                    onClick={() =>
+                      window.open(
+                        `https://zora.co/coin/base:${coin.coin?.address}`,
+                        "_blank"
+                      )
+                    }
                     className="mt-2 w-fit hover:ring-2 hover:ring-yellow-400"
                   >
                     View on Zora

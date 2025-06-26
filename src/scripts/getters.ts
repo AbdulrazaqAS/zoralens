@@ -1,4 +1,4 @@
-import { type Address} from "viem";
+import { formatEther, type Address } from "viem";
 import {
   getCoin,
   getCoins,
@@ -9,9 +9,11 @@ import {
   getProfile,
   getProfileBalances,
 } from "@zoralabs/coins-sdk";
-import type { ProfileData, Zora20Token } from "./utils";
+import type { CoinMetadata, ProfileData, Zora20Token } from "./utils";
 
-export async function fetchUserProfile(identifier: Address | string): Promise<ProfileData> {
+export async function fetchUserProfile(
+  identifier: Address | string
+): Promise<ProfileData> {
   const response = await getProfile({
     identifier,
   });
@@ -25,7 +27,9 @@ export async function fetchUserProfile(identifier: Address | string): Promise<Pr
   return response?.data?.profile as unknown as ProfileData;
 }
 
-export async function fetchAllUserBalances(identifier: Address | string) {
+export async function fetchAllUserBalances(
+  identifier: Address | string
+): Promise<CoinMetadata[]> {
   let allBalances: any[] = [];
   let cursor = undefined;
   const pageSize = 20;
@@ -57,7 +61,20 @@ export async function fetchAllUserBalances(identifier: Address | string) {
     }
   } while (true);
 
-  return allBalances;
+  const formatted = allBalances.map((bal) => {
+    const balanceEther = formatEther(BigInt(Number(bal.balance)));
+    const price = Number(bal.coin!.marketCap) / Number(bal.coin!.totalSupply);
+    const value = Number(balanceEther) * price; // Value of user holding/balance in USD
+
+    return {
+      ...bal,
+      balanceEther,
+      price,
+      value,
+    };
+  });
+
+  return formatted as unknown as CoinMetadata[];
 }
 
 export async function fetchSingleCoin(addr: Address, chainId: number) {
