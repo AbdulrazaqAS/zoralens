@@ -55,25 +55,22 @@ export default function DashboardPage({
 
   useEffect(() => {
     // fetchUserProfile("AbdulrazaqAS").then(console.log).catch(console.error);
-    fetchUserProfile("0x46a7747626ca744fbade35c9f5e16d1b789cb16e")
-      .then(console.log)
-      .catch(console.error);
-
-    fetchAllUserBalances("AbdulrazaqAS")
-      .then((bals) => {
-        console.log(bals);
-        setCoins(bals);
-      })
-      .catch(console.error);
+    // fetchUserProfile("0x46a7747626ca744fbade35c9f5e16d1b789cb16e")
+    //   .then(console.log)
+    //   .catch(console.error);
   }, []);
 
   useEffect(() => {
-    // Simulate loading delay — replace with real fetch later
-    setTimeout(() => {
-      // setCoins(mockCoins);
-      setLoading(false);
-    }, 1000);
-  }, []);
+    if (!user || !user.handle) return;
+
+    fetchAllUserBalances(user.handle)
+      .then((bals) => {
+        console.log(bals);
+        setCoins(bals);
+        setLoading(false);
+      })
+      .catch(console.error);
+  }, [user]);
 
   return (
     <div className="min-h-screen px-4 py-8 max-w-4xl mx-auto">
