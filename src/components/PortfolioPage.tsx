@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { fetchUserProfile, fetchAllUserBalances } from "../scripts/getters";
+import { fetchAllUserBalances } from "../scripts/getters";
 import PortfolioChart from "./PortfolioChart";
 import LoginForm from "./LoginForm";
 import { type CoinMetadata, type ProfileData } from "@/scripts/utils";
-import { formatEther } from "viem";
+import CoinsTable from "./CoinsTable";
 
 const mockCoins = [
   {
@@ -16,22 +15,6 @@ const mockCoins = [
     amountHeld: 2500,
     price: 0.00021,
     change24h: +12.3,
-  },
-  {
-    name: "MemeFuel",
-    symbol: "FUEL",
-    logo: "🔥",
-    amountHeld: 980,
-    price: 0.00095,
-    change24h: -7.8,
-  },
-  {
-    name: "CatFi",
-    symbol: "CAT",
-    logo: "😼",
-    amountHeld: 1420,
-    price: 0.0012,
-    change24h: +2.6,
   },
 ];
 
@@ -117,70 +100,7 @@ export default function DashboardPage({
             />
           )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {coins.map((coin, i) => (
-              <Card key={i} className="rounded-2xl border shadow-sm">
-                <CardContent className="p-4 flex flex-col gap-3">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-3">
-                      {/* <div className="text-2xl">{coin.logo}</div> */}
-                      <div className="text-2xl">{coin.coin?.symbol}</div>
-                      <div>
-                        <h2 className="text-lg font-semibold">
-                          {coin.coin?.name}
-                        </h2>
-                        <p className="text-sm text-gray-500">
-                          ${coin.coin?.symbol}
-                        </p>
-                      </div>
-                    </div>
-                    {/* <span
-                      className={`text-sm font-medium ${
-                        coin.change24h > 0 ? "text-green-500" : "text-red-500"
-                      }`}
-                    >
-                      {coin.change24h > 0 ? "+" : ""}
-                      {coin.change24h.toFixed(2)}%
-                    </span> */}
-                    <span
-                      className={`text-sm font-medium ${
-                        +coin.coin!.marketCapDelta24h > 0
-                          ? "text-green-500"
-                          : "text-red-500"
-                      }`}
-                    >
-                      {+coin.coin!.marketCapDelta24h > 0 ? "+" : ""}
-                      {Number(coin.coin?.marketCapDelta24h).toFixed(2)}%
-                    </span>
-                  </div>
-
-                  <div className="text-sm text-gray-700">
-                    Holding:{" "}
-                    <strong>{Number(coin.balanceEther).toFixed(2)}</strong>
-                  </div>
-                  <div className="text-sm text-gray-700">
-                    Current Price:{" "}
-                    <strong>{coin.price.toLocaleString()} USD</strong>
-                  </div>
-                  <div className="text-sm text-gray-700">
-                    Value:{" "}
-                    <strong>{coin.value.toString().slice(0, 7)} USD</strong>
-                  </div>
-
-                  <Button
-                    variant="outline"
-                    onClick={() =>
-                      window.open(
-                        `https://zora.co/coin/base:${coin.coin?.address}`,
-                        "_blank"
-                      )
-                    }
-                    className="mt-2 w-fit hover:ring-2 hover:ring-yellow-400"
-                  >
-                    View on Zora
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+            <CoinsTable coins={coins} />
           </div>
         </div>
       )}

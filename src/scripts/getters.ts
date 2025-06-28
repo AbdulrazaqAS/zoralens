@@ -189,3 +189,9 @@ export async function fetchTopVolumeCoins(
 
   return tokens as Zora20Token[] | undefined;
 }
+
+export async function fetchMetadata(uri: string): Promise<any> {
+  const result = await fetch(uri);
+  const metadata = await result.json();
+  return metadata;
+}
