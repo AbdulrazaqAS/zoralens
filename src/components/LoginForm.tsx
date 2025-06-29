@@ -36,7 +36,7 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white px-4">
+    <div className="h-[70vh] flex items-center justify-center bg-white px-4">
       <Card className="w-full max-w-md p-6 rounded-2xl shadow-md border border-gray-200">
         <CardContent className="space-y-6">
           <h1 className="text-lg font-bold text-center text-gray-800 font-orbitron">

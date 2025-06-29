@@ -7,10 +7,10 @@ export const NavItems = {
 
 export type Zora20Token = GetCoinResponse["zora20Token"];
 export interface CoinMetadata {
-  balance: string;
-  balanceEther: string;
+  balance?: string;
+  balanceEther?: string;
   price: bigint;
-  value: bigint;
+  value?: bigint;
   id: string;
   coin: Zora20Token;
 }

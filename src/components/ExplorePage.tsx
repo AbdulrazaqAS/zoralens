@@ -9,6 +9,7 @@ import {
   fetchTopVolumeCoins,
 } from "@/scripts/getters";
 import type { Zora20Token } from "@/scripts/utils";
+import ExploreCoinsTable from "./ExploreCoinsTable";
 
 type Categories = "Top Gainers" | "Most Valuable" | "New Coins" | "High Volume";
 
@@ -138,6 +139,7 @@ export default function ExplorePage() {
                     </Card>
                   )
               )}
+              <ExploreCoinsTable coins={section.coins} />
             </div>
           </div>
         ))

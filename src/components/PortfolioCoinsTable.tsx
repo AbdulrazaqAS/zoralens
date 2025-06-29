@@ -1,7 +1,11 @@
 import type { CoinMetadata } from "@/scripts/utils";
 import { Button } from "@/components/ui/button";
 
-export default function CoinsTable({ coins }: { coins: CoinMetadata[] }) {
+export default function PortfolioCoinsTable({
+  coins,
+}: {
+  coins: CoinMetadata[];
+}) {
   return (
     <div className="overflow-x-auto rounded-xl border shadow-sm">
       <table className="min-w-full table-auto text-sm text-gray-700">
@@ -36,9 +40,9 @@ export default function CoinsTable({ coins }: { coins: CoinMetadata[] }) {
                 <td className="px-4 py-3">
                   {Number(coin.balanceEther).toFixed(2)}
                 </td>
-                <td className="px-4 py-3">{coin.price.toLocaleString()} USD</td>
+                <td className="px-4 py-3">{coin.price} USD</td>
                 <td className="px-4 py-3">
-                  {coin.value.toString().slice(0, 7)} USD
+                  {coin.value!.toString().slice(0, 7)} USD
                 </td>
                 <td
                   className={`px-4 py-3 font-semibold ${

@@ -77,6 +77,11 @@ export async function fetchAllUserBalances(
   return formatted as unknown as CoinMetadata[];
 }
 
+export function getCoinPrice(coin: Zora20Token) {
+  if (!coin) return 0;
+  return Number(coin.marketCap) / Number(coin.totalSupply);
+}
+
 export async function fetchSingleCoin(addr: Address, chainId: number) {
   const response = await getCoin({
     address: addr,

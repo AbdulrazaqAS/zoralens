@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { fetchAllUserBalances } from "../scripts/getters";
 import PortfolioChart from "./PortfolioChart";
 import { type CoinMetadata } from "@/scripts/utils";
-import CoinsTable from "./CoinsTable";
+import PortfolioCoinsTable from "./PortfolioCoinsTable";
 import { useParams } from "react-router";
 
 export default function DashboardPage() {
@@ -26,7 +26,7 @@ export default function DashboardPage() {
   }, [id]);
 
   return (
-    <div className="min-h-screen px-4 py-8 max-w-6xl mx-auto">
+    <div className="min-h-screen px-4 py-8 mx-auto">
       <h1 className="text-2xl font-bold mb-6 text-gray-800">{id} Zora Coins</h1>
 
       {loading ? (
@@ -58,7 +58,7 @@ export default function DashboardPage() {
               }))}
             />
           )}
-          <CoinsTable coins={coins} />
+          <PortfolioCoinsTable coins={coins} />
         </div>
       )}
     </div>
