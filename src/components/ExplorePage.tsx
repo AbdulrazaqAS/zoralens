@@ -68,7 +68,7 @@ export default function ExplorePage() {
 
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: 6 }).map((_, i) => (
+          {Array.from({ length: 10 }).map((_, i) => (
             <Skeleton key={i} className="h-40 rounded-xl" />
           ))}
         </div>
@@ -78,69 +78,7 @@ export default function ExplorePage() {
             <h2 className="text-xl font-semibold text-indigo-600 mb-4">
               {section.label}
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-              {section.coins.map(
-                (coin, j) =>
-                  coin && (
-                    <Card
-                      key={j}
-                      className="rounded-2xl shadow-sm border hover:shadow-lg transition"
-                    >
-                      <CardContent className="p-4 flex flex-col gap-3">
-                        <div className="flex justify-between items-center">
-                          <div className="flex items-center gap-2">
-                            {/* <div className="text-2xl">{coin.image}</div> */}
-                            <div>
-                              <div className="font-bold">{coin.name}</div>
-                              <div className="text-sm text-gray-500">
-                                ${coin.symbol}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="text-sm text-gray-700">
-                          Price:{" "}
-                          <strong>
-                            {+coin.marketCap / +coin.totalSupply || "0"} USD
-                          </strong>
-                        </div>
-                        <div className="text-sm text-gray-700">
-                          24h Volume:{" "}
-                          <strong>{coin.volume24h || "0"} USD</strong>
-                        </div>
-                        <div className="text-sm text-gray-700">
-                          24h Change:{" "}
-                          <strong>
-                            {parseFloat(coin.marketCapDelta24h).toFixed(2)}%
-                          </strong>
-                        </div>
-                        <div className="text-sm text-gray-700">
-                          Market Cap:{" "}
-                          <strong>{coin.marketCap || "0"} USD</strong>
-                        </div>
-                        <div className="text-sm text-gray-700">
-                          Holders: <strong>{coin.uniqueHolders}</strong>
-                        </div>
-
-                        <Button
-                          variant="outline"
-                          className="mt-2 w-fit hover:ring-2 hover:ring-yellow-400 text-indigo-600"
-                          onClick={() =>
-                            window.open(
-                              `https://zora.co/coin/base:${coin.address}`,
-                              "_blank"
-                            )
-                          }
-                        >
-                          View on Zora
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  )
-              )}
-              <ExploreCoinsTable coins={section.coins} />
-            </div>
+            <ExploreCoinsTable coins={section.coins} />
           </div>
         ))
       )}

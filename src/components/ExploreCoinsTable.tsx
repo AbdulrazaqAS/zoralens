@@ -12,6 +12,7 @@ export default function ExploreCoinsTable({ coins }: { coins: Zora20Token[] }) {
             <th className="px-4 py-3">Symbol</th>
             <th className="px-4 py-3">Holders</th>
             <th className="px-4 py-3">Price (USD)</th>
+            <th className="px-4 py-3">Market Cap (USD)</th>
             <th className="px-4 py-3">24h Δ</th>
             <th className="px-4 py-3"></th>
           </tr>
@@ -30,7 +31,8 @@ export default function ExploreCoinsTable({ coins }: { coins: Zora20Token[] }) {
                   {coin?.name !== coin?.symbol ? `$${coin?.symbol}` : "--"}
                 </td>
                 <td className="px-4 py-3">{coin?.uniqueHolders}</td>
-                <td className="px-4 py-3">{getCoinPrice(coin)} USD</td>
+                <td className="px-4 py-3">{getCoinPrice(coin)}</td>
+                <td className="px-4 py-3">{coin?.marketCap}</td>
                 <td
                   className={`px-4 py-3 font-semibold ${
                     isUp ? "text-green-600" : "text-red-500"
