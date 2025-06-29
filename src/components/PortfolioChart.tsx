@@ -24,19 +24,17 @@ export default function PortfolioChart({ coins }: { coins: CoinSlice[] }) {
   }));
 
   return (
-    <div className="w-full max-w-md mx-auto mb-8">
-      <h2 className="text-lg font-bold text-gray-800 mb-2 text-center">
-        Portfolio Breakdown
-      </h2>
+    <div className="w-full mx-auto mb-8">
       <ResponsiveContainer width="100%" height={250}>
         <PieChart>
           <Pie
             data={data}
             dataKey="value"
             nameKey="name"
-            outerRadius={90}
-            innerRadius={50}
-            label={({ name, percent }) => `${name} (${percent}%)`}
+            outerRadius={120}
+            innerRadius={60}
+
+            // label={({ name, percent }) => `${name} (${percent}%)`}
           >
             {data.map((_, i) => (
               <Cell key={i} fill={COLORS[i % COLORS.length]} />

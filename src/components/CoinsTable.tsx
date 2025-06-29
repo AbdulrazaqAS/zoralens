@@ -13,7 +13,7 @@ export default function CoinsTable({ coins }: { coins: CoinMetadata[] }) {
             <th className="px-4 py-3">Price (USD)</th>
             <th className="px-4 py-3">Value (USD)</th>
             <th className="px-4 py-3">24h Δ</th>
-            <th className="px-4 py-3">Action</th>
+            <th className="px-4 py-3"></th>
           </tr>
         </thead>
         <tbody>

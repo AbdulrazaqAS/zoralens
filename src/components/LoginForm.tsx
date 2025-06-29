@@ -1,22 +1,35 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Sparkles } from "lucide-react";
 import { handleError } from "@/scripts/actions";
-import { NavItems } from "@/scripts/utils";
+import { useLocalUser } from "@/hooks/useLocalUser";
+import { useNavigate } from "react-router";
 
-interface Props {
-    login: Function;
-    prevUsername?: string;
-    isSigningIn: boolean;
-    setCurrentPage: Function;
-}
-
-export default function LoginForm({prevUsername, setCurrentPage, isSigningIn, login}: Props) {
+export default function LoginForm() {
   const [username, setUsername] = useState("");
 
-  const handleLogin = () => {
+  const {
+    username: prevUsername,
+    user: prevUser,
+    isSigningIn,
+    login,
+  } = useLocalUser();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!prevUsername) return;
+
+    handleLogin(prevUsername);
+  }, [prevUsername]);
+
+  useEffect(() => {
+    if (!prevUser) return;
+    navigate(`/${prevUser.handle}`);
+  }, [prevUser]);
+
+  const handleLogin = (username: string) => {
     if (username.trim().length > 0) {
       login(username.trim());
     } else handleError(new Error("Ïnvalid username"));
@@ -38,16 +51,19 @@ export default function LoginForm({prevUsername, setCurrentPage, isSigningIn, lo
           />
 
           <Button
-            onClick={handleLogin}
+            onClick={() => handleLogin(username)}
             disabled={isSigningIn}
             className="w-full bg-indigo-600 text-white hover:bg-indigo-700 rounded-2xl shadow-md hover:shadow-lg transition disabled:cursor-not-allowed"
           >
-            <Sparkles className="w-4 h-4 mr-2" /> {isSigningIn ? `Signing in as ${prevUsername}` : "Sign in"}
+            <Sparkles className="w-4 h-4 mr-2" />{" "}
+            {isSigningIn ? `Signing in as ${prevUsername}` : "Sign in"}
           </Button>
 
           <div className="flex justify-between pt-2 text-sm text-gray-500">
             <button
-              onClick={() => {setCurrentPage(NavItems.explore)}}
+              onClick={() => {
+                navigate("/explore");
+              }}
               className="hover:text-indigo-600 transition font-medium"
             >
               Go to Explore
