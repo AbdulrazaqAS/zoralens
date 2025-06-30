@@ -10,6 +10,7 @@ import { useParams } from "react-router";
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [coins, setCoins] = useState<CoinMetadata[]>([]);
+  const [totalValue, setTotalValue] = useState(0);
 
   const { id } = useParams();
 
@@ -25,9 +26,20 @@ export default function DashboardPage() {
       .catch(console.error);
   }, [id]);
 
+  useEffect(() => {
+    if (coins.length <= 0) return;
+
+    const coinsValue = coins.reduce((acc, coin) => {
+      return acc + (coin.value ?? 0);
+    }, 0);
+    setTotalValue(coinsValue);
+  }, [coins]);
+
   return (
     <div className="min-h-screen px-4 py-8 mx-auto">
-      <h1 className="text-2xl font-bold mb-6 text-gray-800">{id} Zora Coins</h1>
+      <h1 className="text-2xl font-bold mb-6 text-gray-800">
+        {id} Zora Coins Portfolio
+      </h1>
 
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -51,12 +63,18 @@ export default function DashboardPage() {
       ) : (
         <div className="space-y-4">
           {!loading && coins.length > 0 && (
-            <PortfolioChart
-              coins={coins.map((coin) => ({
-                name: coin.coin!.symbol,
-                value: Number(coin.value),
-              }))}
-            />
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="space-y-4">
+                <p>Portfolio Coins: {coins.length}</p>
+                <p>Portfolio Value: {totalValue}</p>
+              </div>
+              <PortfolioChart
+                coins={coins.map((coin) => ({
+                  name: coin.coin!.symbol,
+                  value: Number(coin.value),
+                }))}
+              />
+            </div>
           )}
           <PortfolioCoinsTable coins={coins} />
         </div>

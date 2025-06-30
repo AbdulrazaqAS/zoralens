@@ -10,7 +10,7 @@ export interface CoinMetadata {
   balance?: string;
   balanceEther?: string;
   price: bigint;
-  value?: bigint;
+  value?: number;
   id: string;
   coin: Zora20Token;
 }
