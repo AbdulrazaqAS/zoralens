@@ -13,6 +13,7 @@
     "@0xsplits/splits-sdk": "^5.1.0",
     "@radix-ui/react-avatar": "^1.1.10",
     "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/react-tabs": "^1.1.12",
     "@tailwindcss/vite": "^4.1.10",
     "@zoralabs/coins-sdk": "^0.2.1",
     "axios": "^1.10.0",

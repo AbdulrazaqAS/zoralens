@@ -59,6 +59,7 @@ export default function PortfolioCoinsTable({
       <table className="min-w-full table-auto text-sm text-gray-700">
         <thead className="bg-gray-50 text-left font-semibold text-gray-800">
           <tr>
+            <th className="px-4 py-3"></th>
             <th className="px-4 py-3">Coin</th>
             <th className="px-4 py-3">Symbol</th>
             <th
@@ -99,6 +100,7 @@ export default function PortfolioCoinsTable({
                 key={i}
                 className="border-t hover:bg-gray-50 transition-all duration-150"
               >
+                <td className="px-4 py-3 font-medium">{i + 1}</td>
                 <td className="px-4 py-3 font-medium">{coin.coin?.name}</td>
                 <td className="px-4 py-3 text-gray-500">
                   {coin.coin?.name !== coin.coin?.symbol
@@ -109,10 +111,10 @@ export default function PortfolioCoinsTable({
                   {Number(coin.balanceEther).toFixed(2)}
                 </td>
                 <td className="px-4 py-3">
-                  {Number(coin.price).toString()} USD
+                  {Number(coin.price).toString()}
                 </td>
                 <td className="px-4 py-3">
-                  {Number(coin.value).toLocaleString()} USD
+                  {Number(coin.value).toLocaleString()}
                 </td>
                 <td
                   className={`px-4 py-3 font-semibold ${

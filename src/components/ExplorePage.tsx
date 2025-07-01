@@ -1,6 +1,8 @@
+"use client";
+
 import { useEffect, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   fetchMostValuableCoins,
@@ -10,78 +12,128 @@ import {
 } from "@/scripts/getters";
 import type { Zora20Token } from "@/scripts/utils";
 import ExploreCoinsTable from "./ExploreCoinsTable";
+import ExploreCoinsTableSkeleton from "./ExploreCoinsTableSkeleton";
 
 type Categories = "Top Gainers" | "Most Valuable" | "New Coins" | "High Volume";
 
 export default function ExplorePage() {
-  const [sections, setSections] = useState<
-    { label: Categories; coins: Zora20Token[] }[]
-  >([]);
+  const [sections, setSections] = useState<Record<Categories, Zora20Token[]>>({
+    "Top Gainers": [],
+    "Most Valuable": [],
+    "New Coins": [],
+    "High Volume": [],
+  });
   const [loading, setLoading] = useState(true);
-  const [coinsAmount, setCoinsAmount] = useState(5);
+  const [activeTab, setActiveTab] = useState<Categories>("Top Gainers");
+  const [coinCount, setCoinCount] = useState(25);
+  const [inputValue, setInputValue] = useState(coinCount.toString());
+
+  const categories: Categories[] = [
+    "Top Gainers",
+    "Most Valuable",
+    "High Volume",
+    "New Coins",
+  ];
+
+  const fetch = async (tab: Categories, amount: number) => {
+    if (sections[tab].length === amount) return;
+
+    setLoading(true);
+    try {
+      let coins: Zora20Token[];
+
+      switch (tab) {
+        case "High Volume":
+          coins = (await fetchTopGainers(amount)) ?? sections["Top Gainers"];
+          break;
+        case "Most Valuable":
+          coins =
+            (await fetchMostValuableCoins(amount)) ?? sections["Most Valuable"];
+          break;
+        case "New Coins":
+          coins =
+            (await fetchTopVolumeCoins(amount)) ?? sections["High Volume"];
+          break;
+        case "Top Gainers":
+          coins = (await fetchNewCoins(amount)) ?? sections["New Coins"];
+          break;
+      }
+
+      setSections((prev) => {
+        return { ...prev, [tab]: coins };
+      });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    fetchTopGainers(coinsAmount)
-      .then((coins) => {
-        if (!coins)
-          setSections((prev) => [...prev, { label: "Top Gainers", coins: [] }]);
-        else setSections((prev) => [...prev, { label: "Top Gainers", coins }]);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    if (!activeTab) return;
 
-    fetchMostValuableCoins(coinsAmount)
-      .then((coins) => {
-        if (!coins)
-          setSections((prev) => [
-            ...prev,
-            { label: "Most Valuable", coins: [] },
-          ]);
-        else
-          setSections((prev) => [...prev, { label: "Most Valuable", coins }]);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    fetch(activeTab, coinCount);
+  }, [activeTab, coinCount]);
 
-    fetchTopVolumeCoins(coinsAmount)
-      .then((coins) => {
-        if (!coins)
-          setSections((prev) => [...prev, { label: "High Volume", coins: [] }]);
-        else setSections((prev) => [...prev, { label: "High Volume", coins }]);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
-
-    fetchNewCoins(coinsAmount)
-      .then((coins) => {
-        if (!coins)
-          setSections((prev) => [...prev, { label: "New Coins", coins: [] }]);
-        else setSections((prev) => [...prev, { label: "New Coins", coins }]);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
+  const handleRefresh = () => {
+    const num = parseInt(inputValue);
+    if (!isNaN(num) && num > 0) {
+      setCoinCount(num);
+    }
+  };
 
   return (
     <div className="min-h-screen p-4 max-w-6xl mx-auto">
       <h1 className="text-3xl font-bold mb-6 text-gray-800">Explore Coins</h1>
 
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: 10 }).map((_, i) => (
-            <Skeleton key={i} className="h-40 rounded-xl" />
-          ))}
-        </div>
-      ) : (
-        sections.map((section, i) => (
-          <div key={i} className="mb-10">
-            <h2 className="text-xl font-semibold text-indigo-600 mb-4">
-              {section.label}
-            </h2>
-            <ExploreCoinsTable coins={section.coins} />
+      <Tabs
+        defaultValue={activeTab}
+        value={activeTab}
+        onValueChange={(val) => setActiveTab(val as Categories)}
+        className="w-full"
+      >
+        <div className="flex flex-col md:flex-row md:justify-between mb-4 gap-3">
+          <TabsList className="flex flex-wrap gap-2">
+            {categories.map((label) => (
+              <TabsTrigger
+                key={label}
+                value={label}
+                className="rounded-xl px-4 py-2 text-sm font-semibold data-[state=active]:bg-indigo-600 data-[state=active]:text-white"
+              >
+                {label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+
+          <div className="flex items-center">
+            <p className="mr-2">Coins:</p>
+            <Input
+              type="number"
+              min="5"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              className="w-10 p-1 text-sm rounded-r-none"
+            />
+            <Button
+              variant="outline"
+              onClick={handleRefresh}
+              className="hover:ring-2 p-1 hover:ring-yellow-400 rounded-l-none"
+            >
+              Refresh
+            </Button>
           </div>
-        ))
-      )}
+        </div>
+
+        {categories.map((label) => (
+          <TabsContent key={label} value={label}>
+            {loading ? (
+              <ExploreCoinsTableSkeleton />
+            ) : (
+              <ExploreCoinsTable coins={sections[label]} />
+            )}
+          </TabsContent>
+        ))}
+      </Tabs>
     </div>
   );
 }
