@@ -1,8 +1,8 @@
 import { type GetCoinResponse } from "@zoralabs/coins-sdk";
 
 export const NavItems = {
-  portfolio: "Portfolio",
   explore: "Explore",
+  portfolio: "Portfolio",
 };
 
 export type Zora20Token = GetCoinResponse["zora20Token"];

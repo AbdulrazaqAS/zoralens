@@ -110,6 +110,7 @@ export default function CompareCoinsPage() {
                           </span>
                         );
                       }
+                      if (key === "priceUsd") value = getCoinPrice(coin);
                       return (
                         <td key={i} className="px-4 py-3">
                           {typeof value === "string" ||

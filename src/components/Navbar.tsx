@@ -3,22 +3,15 @@ import { Menu, X } from "lucide-react";
 import { NavItems } from "../scripts/utils";
 
 import { Button } from "@/components/ui/button";
-import { useLocalUser } from "@/hooks/useLocalUser";
 import { useLocation, useNavigate } from "react-router";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const { logout } = useLocalUser();
   const location = useLocation();
   const navigate = useNavigate();
   const currentNavItem = location.pathname.includes("/explore")
     ? NavItems.explore
     : NavItems.portfolio;
-
-  function handleLogout() {
-    navigate("/");
-    logout();
-  }
 
   function handleNavigate(navItem: string) {
     if (navItem === NavItems.explore) navigate("/explore");
@@ -50,18 +43,6 @@ export default function Navbar() {
             </Button>
           ))}
         </div>
-
-        {/* Connect Button */}
-        {true && (
-          <div className="hidden md:block">
-            <button
-              onClick={handleLogout}
-              className="hover:text-indigo-600 transition font-medium"
-            >
-              Logout
-            </button>
-          </div>
-        )}
 
         {/* Mobile Menu Toggle */}
         <div className="md:hidden">
@@ -95,14 +76,6 @@ export default function Navbar() {
               {item}
             </button>
           ))}
-          {true && (
-            <button
-              onClick={handleLogout}
-              className="hover:text-indigo-600 transition font-medium"
-            >
-              Logout
-            </button>
-          )}
         </div>
       )}
     </nav>

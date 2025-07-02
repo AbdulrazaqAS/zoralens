@@ -40,11 +40,11 @@ export default function LoginForm() {
       <Card className="w-full max-w-md p-6 rounded-2xl shadow-md border border-gray-200">
         <CardContent className="space-y-6">
           <h1 className="text-lg font-bold text-center text-gray-800 font-orbitron">
-            Login to your Zora Coins Portfolio
+            Enter username to view Zora Coins Portfolio
           </h1>
 
           <Input
-            placeholder="Your username"
+            placeholder="Username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             className="rounded-xl border-gray-300 focus:ring-2 focus:ring-indigo-500"
@@ -56,7 +56,9 @@ export default function LoginForm() {
             className="w-full bg-indigo-600 text-white hover:bg-indigo-700 rounded-2xl shadow-md hover:shadow-lg transition disabled:cursor-not-allowed"
           >
             <Sparkles className="w-4 h-4 mr-2" />{" "}
-            {isSigningIn ? `Signing in as ${prevUsername}` : "Sign in"}
+            {isSigningIn
+              ? `Loading ${prevUsername} portfolio`
+              : "View Portfolio"}
           </Button>
 
           <div className="flex justify-between pt-2 text-sm text-gray-500">
