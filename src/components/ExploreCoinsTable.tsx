@@ -3,11 +3,27 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowUp, ArrowDown } from "lucide-react";
 import { getCoinPrice } from "@/scripts/getters";
+import type { Address } from "viem";
+import { handleError } from "@/scripts/actions";
 
 type SortKey = "holders" | "price" | "marketCap" | "change";
 type SortDirection = "asc" | "desc";
 
-export default function ExploreCoinsTable({ coins }: { coins: Zora20Token[] }) {
+interface Props {
+  coins: Zora20Token[];
+  compareCoins: Address[];
+  setCompareCoins: Function;
+  maxCompareCoins: number;
+  showCompareCheckbox: boolean;
+}
+
+export default function ExploreCoinsTable({
+  coins,
+  compareCoins,
+  setCompareCoins,
+  maxCompareCoins,
+  showCompareCheckbox,
+}: Props) {
   const [sortKey, setSortKey] = useState<SortKey>("marketCap");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
 
@@ -30,11 +46,13 @@ export default function ExploreCoinsTable({ coins }: { coins: Zora20Token[] }) {
   };
 
   const sortedCoins = [...coins].sort((a, b) => {
+    if (!a || !b) return 0;
+
     const aVal =
       sortKey === "holders"
         ? Number(a.uniqueHolders)
         : sortKey === "price"
-        ? parseFloat(getCoinPrice(a))
+        ? getCoinPrice(a)
         : sortKey === "marketCap"
         ? parseFloat(a.marketCap || "0")
         : parseFloat(a.marketCapDelta24h || "0");
@@ -43,13 +61,27 @@ export default function ExploreCoinsTable({ coins }: { coins: Zora20Token[] }) {
       sortKey === "holders"
         ? Number(b.uniqueHolders)
         : sortKey === "price"
-        ? parseFloat(getCoinPrice(b))
+        ? getCoinPrice(b)
         : sortKey === "marketCap"
         ? parseFloat(b.marketCap || "0")
         : parseFloat(b.marketCapDelta24h || "0");
 
     return sortDirection === "asc" ? aVal - bVal : bVal - aVal;
   });
+
+  const handleMarkForComaparison = (coinAddr: Address) => {
+    if (compareCoins.includes(coinAddr)) {
+      setCompareCoins((prev: Address[]) =>
+        prev.filter((addr) => addr !== coinAddr)
+      );
+    } else {
+      if (compareCoins.length >= maxCompareCoins)
+        return handleError(new Error(`Max selection is ${maxCompareCoins}`));
+      setCompareCoins((prev: Address[]) => {
+        return [...prev, coinAddr];
+      });
+    }
+  };
 
   return (
     <div className="overflow-x-auto rounded-xl border shadow-sm">
@@ -96,7 +128,19 @@ export default function ExploreCoinsTable({ coins }: { coins: Zora20Token[] }) {
                 key={i}
                 className="border-t hover:bg-gray-50 transition-all duration-150"
               >
-                <td className="px-4 py-3 font-medium">{i + 1}</td>
+                <td className="px-4 py-3 font-medium">
+                  {i + 1}
+                  {showCompareCheckbox && (
+                    <input
+                      type="checkbox"
+                      name="compare"
+                      onChange={() =>
+                        handleMarkForComaparison(coin?.address! as Address)
+                      }
+                      checked={compareCoins.includes(coin?.address! as Address)}
+                    />
+                  )}
+                </td>
                 <td className="px-4 py-3 font-medium">{coin?.name}</td>
                 <td className="px-4 py-3 text-gray-500">
                   {coin?.name !== coin?.symbol ? `$${coin?.symbol}` : "--"}

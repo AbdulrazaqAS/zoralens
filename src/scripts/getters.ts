@@ -89,26 +89,7 @@ export async function fetchSingleCoin(addr: Address, chainId: number) {
   });
 
   const coin = response.data?.zora20Token;
-
-  if (coin) {
-    console.log("Coin Details:");
-    console.log("- Name:", coin.name);
-    console.log("- Symbol:", coin.symbol);
-    console.log("- Description:", coin.description);
-    console.log("- Total Supply:", coin.totalSupply);
-    console.log("- Market Cap:", coin.marketCap);
-    console.log("- 24h Volume:", coin.volume24h);
-    console.log("- Creator:", coin.creatorAddress);
-    console.log("- Created At:", coin.createdAt);
-    console.log("- Unique Holders:", coin.uniqueHolders);
-
-    // Access media if available
-    if (coin.mediaContent?.previewImage) {
-      console.log("- Preview Image:", coin.mediaContent.previewImage);
-    }
-  }
-
-  return response.data?.zora20Token;
+  return coin;
 }
 
 export async function fetchMultipleCoins(
@@ -121,15 +102,6 @@ export async function fetchMultipleCoins(
 
   const response = await getCoins({
     coins,
-  });
-
-  // Process each coin in the response
-  response.data?.zora20Tokens?.forEach((coin: any, index: number) => {
-    console.log(`Coin ${index + 1}: ${coin.name} (${coin.symbol})`);
-    console.log(`- Market Cap: ${coin.marketCap}`);
-    console.log(`- 24h Volume: ${coin.volume24h}`);
-    console.log(`- Holders: ${coin.uniqueHolders}`);
-    console.log("-----------------------------------");
   });
 
   return response.data?.zora20Tokens;

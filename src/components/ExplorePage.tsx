@@ -13,6 +13,9 @@ import {
 import type { Zora20Token } from "@/scripts/utils";
 import ExploreCoinsTable from "./ExploreCoinsTable";
 import ExploreCoinsTableSkeleton from "./ExploreCoinsTableSkeleton";
+import { type Address } from "viem";
+import { useNavigate } from "react-router";
+import { handleError } from "@/scripts/actions";
 
 type Categories = "Top Gainers" | "Most Valuable" | "New Coins" | "High Volume";
 
@@ -27,6 +30,11 @@ export default function ExplorePage() {
   const [activeTab, setActiveTab] = useState<Categories>("Top Gainers");
   const [coinCount, setCoinCount] = useState(25);
   const [inputValue, setInputValue] = useState(coinCount.toString());
+  const [compareCoins, setCompareCoins] = useState<Address[]>([]);
+  const [showCompareCheckbox, setShowCompareCheckbox] = useState(false);
+
+  const navigate = useNavigate();
+  const maxCompareCoins = 5;
 
   const categories: Categories[] = [
     "Top Gainers",
@@ -82,6 +90,22 @@ export default function ExplorePage() {
     }
   };
 
+  function handleCompare(): void {
+    if (showCompareCheckbox) {
+      if (compareCoins.length === 0) setShowCompareCheckbox(false);
+      else if (
+        compareCoins.length === 1 ||
+        compareCoins.length > maxCompareCoins
+      ) {
+        handleError(new Error("Select 2 to 5 coins"));
+        return;
+      } else {
+        const ids = compareCoins.join(",");
+        navigate(`/compare/${ids}`);
+      }
+    } else setShowCompareCheckbox(true);
+  }
+
   return (
     <div className="min-h-screen p-4 max-w-6xl mx-auto">
       <h1 className="text-3xl font-bold mb-6 text-gray-800">Explore Coins</h1>
@@ -121,6 +145,15 @@ export default function ExplorePage() {
             >
               Refresh
             </Button>
+            <Button
+              variant="outline"
+              onClick={handleCompare}
+              className="hover:ring-2 p-1 hover:ring-yellow-400"
+            >
+              {!showCompareCheckbox
+                ? "Compare Coins"
+                : `Compare ${compareCoins.length}/${maxCompareCoins}`}
+            </Button>
           </div>
         </div>
 
@@ -129,7 +162,13 @@ export default function ExplorePage() {
             {loading ? (
               <ExploreCoinsTableSkeleton />
             ) : (
-              <ExploreCoinsTable coins={sections[label]} />
+              <ExploreCoinsTable
+                coins={sections[label]}
+                compareCoins={compareCoins}
+                setCompareCoins={setCompareCoins}
+                showCompareCheckbox={showCompareCheckbox}
+                maxCompareCoins={maxCompareCoins}
+              />
             )}
           </TabsContent>
         ))}
