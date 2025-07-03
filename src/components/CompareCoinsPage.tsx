@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetchMultipleCoins, getCoinPrice } from "@/scripts/getters";
 import type { Zora20Token } from "@/scripts/utils";
-import { ArrowLeft, ArrowUpDown } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import type { Address } from "viem";
 import { handleError } from "@/scripts/actions";
 import {

@@ -67,7 +67,7 @@ export default function ExploreCoinsTable({
         : sortKey === "marketCap"
         ? parseFloat(b.marketCap || "0")
         : sortKey === "tvl"
-        ? parseFloat(a.volume24h || "0")
+        ? parseFloat(b.volume24h || "0")
         : parseFloat(b.marketCapDelta24h || "0");
 
     return sortDirection === "asc" ? aVal - bVal : bVal - aVal;
@@ -117,7 +117,7 @@ export default function ExploreCoinsTable({
               className="px-4 py-3 cursor-pointer select-none"
               onClick={() => handleSort("change")}
             >
-              24h Marketcap {getSortIcon("change")}
+              24h Market Cap {getSortIcon("change")}
             </th>
             <th
               className="px-4 py-3 cursor-pointer select-none"
