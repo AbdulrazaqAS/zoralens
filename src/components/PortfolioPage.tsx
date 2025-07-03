@@ -5,7 +5,8 @@ import { fetchAllUserBalances } from "../scripts/getters";
 import PortfolioChart from "./PortfolioChart";
 import { type CoinMetadata } from "@/scripts/utils";
 import PortfolioCoinsTable from "./PortfolioCoinsTable";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
+import { STORAGE_KEY } from "@/hooks/useLocalUser";
 
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
@@ -13,6 +14,7 @@ export default function DashboardPage() {
   const [totalValue, setTotalValue] = useState(0);
 
   const { id } = useParams();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!id) return; // render UserNotFound
@@ -35,11 +37,25 @@ export default function DashboardPage() {
     setTotalValue(coinsValue);
   }, [coins]);
 
+  function handleExitPortfolio() {
+    localStorage.removeItem(STORAGE_KEY);
+    navigate("/");
+  }
+
   return (
     <div className="min-h-screen px-4 py-8 mx-auto">
-      <h1 className="text-2xl font-bold mb-6 text-gray-800">
-        {id} Zora Coins Portfolio
-      </h1>
+      <div className="flex flex-row gap-4">
+        <h1 className="text-2xl font-bold mb-6 text-gray-800">
+          {id} Zora Coins Portfolio
+        </h1>
+        <Button
+          variant="outline"
+          className="rounded-xl text-red-600 hover:ring-2 hover:ring-red-400"
+          onClick={handleExitPortfolio}
+        >
+          Exit Portfolio
+        </Button>
+      </div>
 
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

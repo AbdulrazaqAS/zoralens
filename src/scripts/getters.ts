@@ -78,7 +78,7 @@ export async function fetchAllUserBalances(
 }
 
 export function getCoinPrice(coin: Zora20Token) {
-  if (!coin) return 0;
+  if (!coin || coin.marketCap === "0") return 0;
   return Number(coin.marketCap) / Number(coin.totalSupply);
 }
 

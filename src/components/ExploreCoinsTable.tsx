@@ -6,7 +6,7 @@ import { getCoinPrice } from "@/scripts/getters";
 import type { Address } from "viem";
 import { handleError } from "@/scripts/actions";
 
-type SortKey = "holders" | "price" | "marketCap" | "change";
+type SortKey = "holders" | "price" | "marketCap" | "change" | "tvl";
 type SortDirection = "asc" | "desc";
 
 interface Props {
@@ -55,6 +55,8 @@ export default function ExploreCoinsTable({
         ? getCoinPrice(a)
         : sortKey === "marketCap"
         ? parseFloat(a.marketCap || "0")
+        : sortKey === "tvl"
+        ? parseFloat(a.volume24h || "0")
         : parseFloat(a.marketCapDelta24h || "0");
 
     const bVal =
@@ -64,6 +66,8 @@ export default function ExploreCoinsTable({
         ? getCoinPrice(b)
         : sortKey === "marketCap"
         ? parseFloat(b.marketCap || "0")
+        : sortKey === "tvl"
+        ? parseFloat(a.volume24h || "0")
         : parseFloat(b.marketCapDelta24h || "0");
 
     return sortDirection === "asc" ? aVal - bVal : bVal - aVal;
@@ -113,7 +117,13 @@ export default function ExploreCoinsTable({
               className="px-4 py-3 cursor-pointer select-none"
               onClick={() => handleSort("change")}
             >
-              24h Δ {getSortIcon("change")}
+              24h Marketcap {getSortIcon("change")}
+            </th>
+            <th
+              className="px-4 py-3 cursor-pointer select-none"
+              onClick={() => handleSort("tvl")}
+            >
+              24h TVL {getSortIcon("tvl")}
             </th>
             <th className="px-4 py-3"></th>
           </tr>
@@ -128,8 +138,8 @@ export default function ExploreCoinsTable({
                 key={i}
                 className="border-t hover:bg-gray-50 transition-all duration-150"
               >
-                <td className="px-4 py-3 font-medium">
-                  {i + 1}
+                <td className="flex flex-row px-4 py-3 font-medium">
+                  <p>{i + 1}</p>
                   {showCompareCheckbox && (
                     <input
                       type="checkbox"
@@ -138,6 +148,7 @@ export default function ExploreCoinsTable({
                         handleMarkForComaparison(coin?.address! as Address)
                       }
                       checked={compareCoins.includes(coin?.address! as Address)}
+                      className="ml-2"
                     />
                   )}
                 </td>
@@ -154,8 +165,9 @@ export default function ExploreCoinsTable({
                   }`}
                 >
                   {isUp ? "+" : ""}
-                  {marketCapDelta.toFixed(2)}%
+                  {marketCapDelta.toFixed(2)}
                 </td>
+                <td className="px-4 py-3">{coin?.volume24h}</td>
                 <td className="px-4 py-3">
                   <Button
                     variant="outline"

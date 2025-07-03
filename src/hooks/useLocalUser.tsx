@@ -3,7 +3,7 @@ import { fetchUserProfile } from "@/scripts/getters";
 import { type ProfileData } from "@/scripts/utils";
 import { useEffect, useState } from "react";
 
-const STORAGE_KEY = "zora-username";
+export const STORAGE_KEY = "zora-username";
 
 export function useLocalUser() {
   const [username, setUsername] = useState<string>();
@@ -22,12 +22,15 @@ export function useLocalUser() {
     if (user || !username) return;
 
     setIsSigningIn(true);
-    fetchUserProfile(username).then(profile => {
-      if (!profile) return handleError(new Error("Account does not exist"));
-      localStorage.setItem(STORAGE_KEY, username);
-      setUser(profile);
-      console.log("Üser profile", profile);
-    }).catch(handleError).finally(() => setIsSigningIn(false));
+    fetchUserProfile(username)
+      .then((profile) => {
+        if (!profile) return handleError(new Error("Account does not exist"));
+        localStorage.setItem(STORAGE_KEY, username);
+        setUser(profile);
+        console.log("Üser profile", profile);
+      })
+      .catch(handleError)
+      .finally(() => setIsSigningIn(false));
   }, [username]);
 
   const login = (name: string) => {

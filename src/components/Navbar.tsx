@@ -19,8 +19,8 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="bg-white mb-5 border-b border-gray-200 text-gray-900 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+    <nav className="bg-white mb-2 border-b border-gray-200 text-gray-900 shadow-sm">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
         {/* Logo */}
         <div className="text-2xl font-heading font-bold text-indigo-600">
           ZoraLens

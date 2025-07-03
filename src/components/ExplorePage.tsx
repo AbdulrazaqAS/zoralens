@@ -51,22 +51,23 @@ export default function ExplorePage() {
       let coins: Zora20Token[];
 
       switch (tab) {
-        case "High Volume":
+        case "Top Gainers":
           coins = (await fetchTopGainers(amount)) ?? sections["Top Gainers"];
           break;
         case "Most Valuable":
           coins =
             (await fetchMostValuableCoins(amount)) ?? sections["Most Valuable"];
           break;
-        case "New Coins":
+        case "High Volume":
           coins =
             (await fetchTopVolumeCoins(amount)) ?? sections["High Volume"];
           break;
-        case "Top Gainers":
+        case "New Coins":
           coins = (await fetchNewCoins(amount)) ?? sections["New Coins"];
           break;
       }
 
+      console.log("Coins:", coins);
       setSections((prev) => {
         return { ...prev, [tab]: coins };
       });
@@ -136,7 +137,7 @@ export default function ExplorePage() {
               min="5"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              className="w-10 p-1 text-sm rounded-r-none"
+              className="w-20 p-1 text-sm rounded-r-none"
             />
             <Button
               variant="outline"
