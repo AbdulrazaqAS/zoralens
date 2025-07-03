@@ -2,6 +2,8 @@ import { formatEther, type Address } from "viem";
 import {
   getCoin,
   getCoins,
+  getCoinsLastTraded,
+  getCoinsLastTradedUnique,
   getCoinsMostValuable,
   getCoinsNew,
   getCoinsTopGainers,
@@ -156,6 +158,36 @@ export async function fetchTopVolumeCoins(
   amount?: number
 ): Promise<Zora20Token[] | undefined> {
   const response = await getCoinsTopVolume24h({
+    count: amount ?? 10, // Optional: number of coins per page
+    after: undefined, // Optional: for pagination
+  });
+
+  const tokens = response.data?.exploreList?.edges?.map(
+    (edge: any) => edge.node
+  );
+
+  return tokens as Zora20Token[] | undefined;
+}
+
+export async function fetchLastTradedCoins(
+  amount?: number
+): Promise<Zora20Token[] | undefined> {
+  const response = await getCoinsLastTraded({
+    count: amount ?? 10, // Optional: number of coins per page
+    after: undefined, // Optional: for pagination
+  });
+
+  const tokens = response.data?.exploreList?.edges?.map(
+    (edge: any) => edge.node
+  );
+
+  return tokens as Zora20Token[] | undefined;
+}
+
+export async function fetchLastTradedUniqueCoins(
+  amount?: number
+): Promise<Zora20Token[] | undefined> {
+  const response = await getCoinsLastTradedUnique({
     count: amount ?? 10, // Optional: number of coins per page
     after: undefined, // Optional: for pagination
   });

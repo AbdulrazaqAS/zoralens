@@ -5,6 +5,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
+  fetchLastTradedCoins,
+  fetchLastTradedUniqueCoins,
   fetchMostValuableCoins,
   fetchNewCoins,
   fetchTopGainers,
@@ -17,7 +19,28 @@ import { type Address } from "viem";
 import { useNavigate } from "react-router";
 import { handleError } from "@/scripts/actions";
 
-type Categories = "Top Gainers" | "Most Valuable" | "New Coins" | "High Volume";
+type Categories =
+  | "Top Gainers"
+  | "Most Valuable"
+  | "New Coins"
+  | "High Volume"
+  | "Recently Traded"
+  | "Recently Traded Unique";
+
+const descriptions: Record<Categories, string> = {
+  "Top Gainers":
+    "📈 These coins have experienced the largest percentage increase in market cap over the past 24 hours, signaling strong recent growth.",
+  "Most Valuable":
+    "💰 These are the top coins ranked by total market capitalization, representing the most valuable assets on the platform.",
+  "New Coins":
+    "🆕 Freshly launched coins that are newly minted and starting to gain traction in the ecosystem.",
+  "High Volume":
+    "🔊 Coins that have seen the highest trading activity in the past 24 hours, often indicating strong interest or volatility.",
+  "Recently Traded":
+    "💹 Coins that have been actively bought or sold most recently, showing what’s currently catching traders’ attention.",
+  "Recently Traded Unique":
+    "🧍‍♂️ Coins that were recently traded by a high number of unique wallets, highlighting community engagement and diversity of interest.",
+};
 
 export default function ExplorePage() {
   const [sections, setSections] = useState<Record<Categories, Zora20Token[]>>({
@@ -25,6 +48,8 @@ export default function ExplorePage() {
     "Most Valuable": [],
     "New Coins": [],
     "High Volume": [],
+    "Recently Traded": [],
+    "Recently Traded Unique": [],
   });
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Categories>("Top Gainers");
@@ -41,6 +66,8 @@ export default function ExplorePage() {
     "Most Valuable",
     "High Volume",
     "New Coins",
+    "Recently Traded",
+    "Recently Traded Unique",
   ];
 
   const fetch = async (tab: Categories, amount: number) => {
@@ -65,9 +92,17 @@ export default function ExplorePage() {
         case "New Coins":
           coins = (await fetchNewCoins(amount)) ?? sections["New Coins"];
           break;
+        case "Recently Traded":
+          coins =
+            (await fetchLastTradedCoins(amount)) ?? sections["Recently Traded"];
+          break;
+        case "Recently Traded Unique":
+          coins =
+            (await fetchLastTradedUniqueCoins(amount)) ??
+            sections["Recently Traded Unique"];
+          break;
       }
 
-      console.log("Coins:", coins);
       setSections((prev) => {
         return { ...prev, [tab]: coins };
       });
@@ -117,8 +152,8 @@ export default function ExplorePage() {
         onValueChange={(val) => setActiveTab(val as Categories)}
         className="w-full"
       >
-        <div className="flex flex-col md:flex-row md:justify-between mb-4 gap-3">
-          <TabsList className="flex flex-wrap gap-2">
+        <div className="flex flex-col md:flex-row md:justify-between gap-3">
+          <TabsList className="">
             {categories.map((label) => (
               <TabsTrigger
                 key={label}
@@ -156,6 +191,10 @@ export default function ExplorePage() {
                 : `Compare ${compareCoins.length}/${maxCompareCoins}`}
             </Button>
           </div>
+        </div>
+
+        <div key={activeTab} className="text-gray-600 text-md">
+          {descriptions[activeTab]}
         </div>
 
         {categories.map((label) => (
