@@ -38,7 +38,7 @@ export default function LoginForm() {
   return (
     <div className="h-[70vh] flex flex-col gap-7 items-center justify-center bg-white px-4">
       <div className="text-center w-full px-4">
-        <p className="text-gray-500 max-w-1/2 mx-auto text-2xl">
+        <p className="text-gray-500 md:max-w-1/2 mx-auto text-2xl">
           🔍 View the coin portfolio of any Zora user by entering their
           username. Instantly explore their holdings, prices, and coin stats in
           one place.
