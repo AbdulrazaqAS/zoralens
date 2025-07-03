@@ -16,9 +16,9 @@ function App() {
     <>
       <NavBar />
       <Routes>
-        <Route path="/" element={<LoginForm />} />
+        <Route path="/" element={<ExplorePage />} />
+        <Route path="/login" element={<LoginForm />} />
         <Route path="/:id" element={<PortfolioPage />} />
-        <Route path="/explore" element={<ExplorePage />} />
         <Route path="/compare/:ids" element={<CompareCoinsPage />} />
       </Routes>
       <Toaster />

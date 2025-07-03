@@ -9,13 +9,13 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const currentNavItem = location.pathname.includes("/explore")
-    ? NavItems.explore
-    : NavItems.portfolio;
+  const currentNavItem = location.pathname.includes("/login")
+    ? NavItems.portfolio
+    : NavItems.explore;
 
   function handleNavigate(navItem: string) {
-    if (navItem === NavItems.explore) navigate("/explore");
-    else if (navItem === NavItems.portfolio) navigate("/"); // relogin
+    if (navItem === NavItems.explore) navigate("/");
+    else if (navItem === NavItems.portfolio) navigate("/login"); // relogin
   }
 
   return (

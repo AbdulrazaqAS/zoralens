@@ -36,10 +36,18 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="h-[70vh] flex items-center justify-center bg-white px-4">
+    <div className="h-[70vh] flex flex-col gap-7 items-center justify-center bg-white px-4">
+      <div className="text-center w-full px-4">
+        <p className="text-gray-500 max-w-1/2 mx-auto text-2xl">
+          🔍 View the coin portfolio of any Zora user by entering their
+          username. Instantly explore their holdings, prices, and coin stats in
+          one place.
+        </p>
+      </div>
+
       <Card className="w-full max-w-md p-6 rounded-2xl shadow-md border border-gray-200">
         <CardContent className="space-y-6">
-          <h1 className="text-lg font-bold text-center text-gray-800 font-orbitron">
+          <h1 className="text-lg font-bold text-center text-gray-500 font-orbitron">
             Enter Portfolio username
           </h1>
 
@@ -64,7 +72,7 @@ export default function LoginForm() {
           <div className="flex justify-between pt-2 text-sm text-gray-500">
             <button
               onClick={() => {
-                navigate("/explore");
+                navigate("/");
               }}
               className="hover:text-indigo-600 transition font-medium"
             >
@@ -76,7 +84,7 @@ export default function LoginForm() {
               rel="noopener noreferrer"
               className="hover:text-yellow-500 transition font-medium"
             >
-              Create Account
+              Create Zora Account
             </a>
           </div>
         </CardContent>

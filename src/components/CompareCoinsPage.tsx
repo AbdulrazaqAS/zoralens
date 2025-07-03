@@ -62,7 +62,7 @@ export default function CompareCoinsPage() {
       <div className="mb-6 space-y-3">
         <Button
           variant="outline"
-          onClick={() => navigate("/explore")}
+          onClick={() => navigate("/")}
           className="gap-2"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Explore

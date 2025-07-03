@@ -39,7 +39,7 @@ export default function DashboardPage() {
 
   function handleExitPortfolio() {
     localStorage.removeItem(STORAGE_KEY);
-    navigate("/");
+    navigate("/login");
   }
 
   return (
