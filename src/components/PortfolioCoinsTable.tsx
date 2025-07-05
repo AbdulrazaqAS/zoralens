@@ -6,6 +6,10 @@ import { ArrowUp, ArrowDown } from "lucide-react";
 type SortKey = "holding" | "price" | "value" | "change";
 type SortDirection = "asc" | "desc";
 
+/**
+ * Portfolio coins table component with sortable columns
+ * Displays user's coin holdings with value calculations and Zora links
+ */
 export default function PortfolioCoinsTable({
   coins,
 }: {
@@ -14,6 +18,9 @@ export default function PortfolioCoinsTable({
   const [sortKey, setSortKey] = useState<SortKey>("value");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
 
+  /**
+   * Handles column sorting - toggles direction if same column, sets new column with desc default
+   */
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
       setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
@@ -23,6 +30,9 @@ export default function PortfolioCoinsTable({
     }
   };
 
+  /**
+   * Returns appropriate sort icon for column headers
+   */
   const getSortIcon = (key: SortKey) => {
     if (key !== sortKey) return null;
     return sortDirection === "asc" ? (
@@ -32,6 +42,9 @@ export default function PortfolioCoinsTable({
     );
   };
 
+  /**
+   * Sorts coins array based on selected column and direction
+   */
   const sortedCoins = [...coins].sort((a, b) => {
     const aVal =
       sortKey === "holding"

@@ -27,6 +27,9 @@ export default function ExploreCoinsTable({
   const [sortKey, setSortKey] = useState<SortKey>("marketCap");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
 
+  /**
+   * Handles column sorting - toggles direction if same column, sets new column with desc default
+   */
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
       setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
@@ -36,6 +39,9 @@ export default function ExploreCoinsTable({
     }
   };
 
+  /**
+   * Returns appropriate sort icon for column headers
+   */
   const getSortIcon = (key: SortKey) => {
     if (sortKey !== key) return null;
     return sortDirection === "asc" ? (
@@ -45,6 +51,9 @@ export default function ExploreCoinsTable({
     );
   };
 
+  /**
+   * Sorts coins array based on selected column and direction
+   */
   const sortedCoins = [...coins].sort((a, b) => {
     if (!a || !b) return 0;
 
@@ -73,6 +82,10 @@ export default function ExploreCoinsTable({
     return sortDirection === "asc" ? aVal - bVal : bVal - aVal;
   });
 
+  /**
+   * Handles marking a coin for comparison
+   * Adds to compareCoins if not already included, removes if already selected
+   */
   const handleMarkForComaparison = (coinAddr: Address) => {
     if (compareCoins.includes(coinAddr)) {
       setCompareCoins((prev: Address[]) =>
