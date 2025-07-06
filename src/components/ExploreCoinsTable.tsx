@@ -6,7 +6,7 @@ import { getCoinPrice } from "@/scripts/getters";
 import type { Address } from "viem";
 import { handleError } from "@/scripts/actions";
 
-type SortKey = "holders" | "price" | "marketCap" | "change" | "tvl";
+type SortKey = "holders" | "price" | "marketCap" | "change" | "vol24";
 type SortDirection = "asc" | "desc";
 
 interface Props {
@@ -64,7 +64,7 @@ export default function ExploreCoinsTable({
         ? getCoinPrice(a)
         : sortKey === "marketCap"
         ? parseFloat(a.marketCap || "0")
-        : sortKey === "tvl"
+        : sortKey === "vol24"
         ? parseFloat(a.volume24h || "0")
         : parseFloat(a.marketCapDelta24h || "0");
 
@@ -75,7 +75,7 @@ export default function ExploreCoinsTable({
         ? getCoinPrice(b)
         : sortKey === "marketCap"
         ? parseFloat(b.marketCap || "0")
-        : sortKey === "tvl"
+        : sortKey === "vol24"
         ? parseFloat(b.volume24h || "0")
         : parseFloat(b.marketCapDelta24h || "0");
 
@@ -134,9 +134,9 @@ export default function ExploreCoinsTable({
             </th>
             <th
               className="px-4 py-3 cursor-pointer select-none"
-              onClick={() => handleSort("tvl")}
+              onClick={() => handleSort("vol24")}
             >
-              24h TVL {getSortIcon("tvl")}
+              24h Vol {getSortIcon("vol24")}
             </th>
             <th className="px-4 py-3"></th>
           </tr>

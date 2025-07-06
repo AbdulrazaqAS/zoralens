@@ -12,7 +12,7 @@ export default function ExploreCoinsTableSkeleton() {
             <th className="px-4 py-3">Price (USD)</th>
             <th className="px-4 py-3">Market Cap (USD)</th>
             <th className="px-4 py-3">24h Market Cap</th>
-            <th className="px-4 py-3">24h TVL</th>
+            <th className="px-4 py-3">24h Vol</th>
             <th className="px-4 py-3"></th>
           </tr>
         </thead>
