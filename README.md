@@ -1,6 +1,6 @@
-# 🔍 ZoraLens
+# ZoraLens
 
-**ZoraLens** is a powerfull explorer app for Zora Coins. It helps traders and creators get a tabular and visualized data for the top performing coins.
+**ZoraLens** is a powerful explorer app for Zora Coins. It provides traders and creators with clear, tabular, and visual data on top-performing coins, making it easy to analyze and compare market trends.
 
 ## 🚀 Features
 
@@ -19,11 +19,9 @@
 - Visual charts: Market Cap, Holders, 24h Change
 - Quick access to Zora links
 
-### 🌐 Social + Local UX
-- One-input login to load portfolios
+### 🌐 UX
 - LocalStorage-based user state for autologin
-- Mobile-first responsive UI
-//- Gamified styles with animated interactions
+- Responsive UI
 
 ## 💻 Tech Stack
 
@@ -40,33 +38,30 @@
 ```bash
 git clone https://github.com/AbdulrazaqAS/zoralens.git
 cd zoralens
+```
 
-2. Install dependencies
+### 2. Install dependencies
+```bash
+npm install
+```
 
-`npm install`
-
-3. Add environment vars
+### 3. Add environment vars
 ```bash
 # Rename file
 mv .env.example .env
 ```
 
-Visit []() and create an API key then add it to the .env file var `VITE_ZORA_API_KEY`
+Visit [Zora Developers](https://zora.co/settings/developer) and create an API key then add it to the .env file var `VITE_ZORA_API_KEY`
 
-4. Run the dev server
-
-`npm run dev`
+### 4. Run the dev server
+```bash
+npm run dev
+```
 
 App will be running at `http://localhost:5173`
 
-🌐 Live Demo
+## 🌐 Live Demo
+> [ZoraLens](https://rememe.vercel.app/)
 
-> [ZoraLens]()
-
-📄 License
-
+## 📄 License
 MIT License. Free to fork, remix, and contribute!
-
-💡 Contributing
-
-Pull requests are welcome!
