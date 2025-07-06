@@ -2,9 +2,19 @@ import type { CoinMetadata } from "@/scripts/utils";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowUp, ArrowDown } from "lucide-react";
+import type { Address } from "viem";
+import { handleError } from "@/scripts/actions";
 
 type SortKey = "holding" | "price" | "value" | "change";
 type SortDirection = "asc" | "desc";
+
+interface Props {
+  coins: CoinMetadata[];
+  compareCoins: Address[];
+  setCompareCoins: Function;
+  maxCompareCoins: number;
+  showCompareCheckbox: boolean;
+}
 
 /**
  * Portfolio coins table component with sortable columns
@@ -12,9 +22,11 @@ type SortDirection = "asc" | "desc";
  */
 export default function PortfolioCoinsTable({
   coins,
-}: {
-  coins: CoinMetadata[];
-}) {
+  compareCoins,
+  setCompareCoins,
+  maxCompareCoins,
+  showCompareCheckbox,
+}: Props) {
   const [sortKey, setSortKey] = useState<SortKey>("value");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
 
@@ -67,6 +79,24 @@ export default function PortfolioCoinsTable({
     return sortDirection === "asc" ? aVal - bVal : bVal - aVal;
   });
 
+  /**
+   * Handles marking a coin for comparison
+   * Adds to compareCoins if not already included, removes if already selected
+   */
+  const handleMarkForComparison = (coinAddr: Address) => {
+    if (compareCoins.includes(coinAddr)) {
+      setCompareCoins((prev: Address[]) =>
+        prev.filter((addr) => addr !== coinAddr)
+      );
+    } else {
+      if (compareCoins.length >= maxCompareCoins)
+        return handleError(new Error(`Max selection is ${maxCompareCoins}`));
+      setCompareCoins((prev: Address[]) => {
+        return [...prev, coinAddr];
+      });
+    }
+  };
+
   return (
     <div className="overflow-x-auto rounded-xl border shadow-sm">
       <table className="min-w-full table-auto text-sm text-gray-700">
@@ -113,7 +143,20 @@ export default function PortfolioCoinsTable({
                 key={i}
                 className="border-t hover:bg-gray-50 transition-all duration-150"
               >
-                <td className="px-4 py-3 font-medium">{i + 1}</td>
+                <td className="flex flex-row px-4 py-3 font-medium">
+                  <p>{i + 1}</p>
+                  {showCompareCheckbox && (
+                    <input
+                      type="checkbox"
+                      name="compare"
+                      onChange={() =>
+                        handleMarkForComparison(coin.coin?.address! as Address)
+                      }
+                      checked={compareCoins.includes(coin.coin?.address! as Address)}
+                      className="ml-2"
+                    />
+                  )}
+                </td>
                 <td className="px-4 py-3 font-medium">{coin.coin?.name}</td>
                 <td className="px-4 py-3 text-gray-500">
                   {coin.coin?.name !== coin.coin?.symbol
