@@ -9,9 +9,9 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const currentNavItem = location.pathname.includes("/login")
-    ? NavItems.portfolio
-    : NavItems.explore;
+  const currentNavItem = location.pathname === '/'
+    ? NavItems.explore
+    : NavItems.portfolio;
 
   function handleNavigate(navItem: string) {
     if (navItem === NavItems.explore) navigate("/");

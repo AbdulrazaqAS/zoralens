@@ -3,8 +3,10 @@ import { fetchUserProfile } from "@/scripts/getters";
 import { type ProfileData } from "@/scripts/utils";
 import { useEffect, useState } from "react";
 
+/** Storage key for persisting username in localStorage */
 export const STORAGE_KEY = "zora-username";
 
+/** Hook for managing local user authentication and profile data */
 export function useLocalUser() {
   const [username, setUsername] = useState<string>();
   const [user, setUser] = useState<ProfileData>();
@@ -33,6 +35,7 @@ export function useLocalUser() {
       .finally(() => setIsSigningIn(false));
   }, [username]);
 
+  /** Logs in user with provided username */
   const login = (name: string) => {
     if (!name.trim()) {
       handleError(new Error("Invalid username"));
@@ -42,7 +45,7 @@ export function useLocalUser() {
     setUsername(name);
   };
 
-  // Clear username
+  /** Clears user data and logs out */
   const logout = () => {
     localStorage.removeItem(STORAGE_KEY);
     setUsername(undefined);

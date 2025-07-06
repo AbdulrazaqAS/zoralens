@@ -79,17 +79,23 @@ export default function DashboardPage() {
       ) : (
         <div className="space-y-4">
           {!loading && coins.length > 0 && (
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="space-y-4">
-                <p>Portfolio Coins: {coins.length}</p>
-                <p>Portfolio Value: {totalValue}</p>
+            <div className="flex flex-col md:flex-row gap-6 items-center bg-white rounded-xl shadow p-6">
+              <div className="flex flex-col items-start space-y-2 min-w-[200px]">
+              <span className="text-gray-500 text-sm">Coins Held</span>
+              <span className="text-2xl font-semibold text-indigo-700">{coins.length}</span>
+              <span className="text-gray-500 text-sm mt-4">Portfolio Value</span>
+              <span className="text-2xl font-semibold text-green-600">
+                ${totalValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+              </span>
               </div>
+              <div className="flex-1 w-full">
               <PortfolioChart
                 coins={coins.map((coin) => ({
-                  name: coin.coin!.symbol,
-                  value: Number(coin.value),
+                name: coin.coin!.symbol,
+                value: Number(coin.value),
                 }))}
               />
+              </div>
             </div>
           )}
           <PortfolioCoinsTable coins={coins} />
