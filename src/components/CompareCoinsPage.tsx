@@ -140,14 +140,14 @@ export default function CompareCoinsPage() {
                                 }`}
                               >
                                 {isUp ? "+" : ""}
-                                {num.toFixed(2)}
+                                {num.toFixed(2)}%
                               </span>
                             );
                           }
                           if (key === "priceUsd") {
                             value = (
                               <span className="font-mono text-indigo-600">
-                                ${getCoinPrice(coin).toFixed(6)}
+                                ${getCoinPrice(coin)}
                               </span>
                             );
                           }
