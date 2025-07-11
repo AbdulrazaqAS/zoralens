@@ -1,6 +1,9 @@
 # ZoraLens
 
-**ZoraLens** is a powerful explorer app for Zora Coins. It provides traders and creators with clear, tabular, and visual data on top-performing coins, making it easy to analyze and compare market trends.
+**ZoraLens** is a powerful explorer app for Zora ecosystem. It provides traders and creators with clear, tabular, and visual data on top-performing coins, making it easy to analyze and compare market trends. It's the CoinGecko of Zora!.
+
+## 💡 Inspiration
+We wanted a single dashboard to track trending coins, spot new opportunities, and make informed decisions quickly. ZoraLens was built to fill this gap and empower the Zora community with actionable insights.
 
 ## 🚀 Features
 
@@ -22,6 +25,17 @@
 ### 🌐 UX
 - LocalStorage-based user state for autologin
 - Responsive UI
+
+## 📡 Data Source: Zora SDK (v4)
+
+ZoraLens leverages the powerful **Zora SDK v4** to fetch and present real-time, on-chain coin data. The SDK allows for seamless access to Zora’s open minting and trading infrastructure.
+
+We use the SDK for the following key data queries:
+
+- Top Movers & other Categories
+- Individual Coin Metadata
+- User Account
+- User Coin Balances
 
 ## 💻 Tech Stack
 
